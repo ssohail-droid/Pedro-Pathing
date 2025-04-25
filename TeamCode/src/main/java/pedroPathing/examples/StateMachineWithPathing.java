@@ -36,10 +36,19 @@ public class StateMachineWithPathing extends OpMode {
     private final Pose Submersible = new Pose(43, 69, Math.toRadians(facing)); // point B
     private final Pose Submersible2 = new Pose(48, 69, Math.toRadians(facing)); // point B
 
+///
+
+    private final Pose SubmersibleBack = new Pose(34, 69, Math.toRadians(facing));
+    private final Pose clearBrace = new Pose(34, 15, Math.toRadians(facing));
+
+
+
+
 
     private PathChain goToSubmersible;
     private PathChain goToSubmersible2;
-    private PathChain test;
+    private PathChain moveBackFromSubmersible;
+    private PathChain moveClearBrace;
 
     public void buildPaths() {
 
@@ -51,6 +60,16 @@ public class StateMachineWithPathing extends OpMode {
         goToSubmersible2 = follower.pathBuilder()
                 .addPath(new BezierLine(new Point(Submersible), new Point(Submersible2)))
                 .setLinearHeadingInterpolation(Submersible.getHeading(), Submersible2.getHeading())
+                .build();
+
+        moveBackFromSubmersible = follower.pathBuilder()
+                .addPath(new BezierLine(new Point(Submersible2), new Point(SubmersibleBack)))
+                .setLinearHeadingInterpolation(Submersible2.getHeading(), SubmersibleBack.getHeading())
+                .build();
+
+        moveClearBrace = follower.pathBuilder()
+                .addPath(new BezierLine(new Point(SubmersibleBack), new Point(clearBrace)))
+                .setLinearHeadingInterpolation(SubmersibleBack.getHeading(), clearBrace.getHeading())
                 .build();
     }
 
@@ -104,7 +123,48 @@ public class StateMachineWithPathing extends OpMode {
                 }
                 break;
 
+
             case 2:
+
+                if(!follower.isBusy()) {
+                    follower.setMaxPower(0.4);
+
+                    follower.followPath(moveBackFromSubmersible);
+
+                    setPathState(3);
+                }
+
+
+
+                break;
+
+            case 3:
+
+                if(!follower.isBusy()) {
+                    follower.setMaxPower(0.4);
+                    follower.followPath(moveClearBrace);
+
+
+                    if (follower.getCurrentTValue() > 0.0){
+
+
+                        linearMotor.setTargetPosition(armPickup);
+                        linearMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                        linearMotor.setPower(moterSpeed);
+                        //claw.setPosition(0.15);
+                        //wrist.setPosition(0.7);
+
+
+
+                    }
+
+                    setPathState(4);
+                }
+
+
+                break;
+
+            case 4:
 
                 if(!follower.isBusy()) {
 
