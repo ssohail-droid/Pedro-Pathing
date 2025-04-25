@@ -57,8 +57,8 @@ public class Circle extends OpMode {
 
         telemetryA = new MultipleTelemetry(this.telemetry, FtcDashboard.getInstance().getTelemetry());
         telemetryA.addLine("This will run in a roughly circular shape of radius " + RADIUS
-                            + ", starting on the right-most edge. So, make sure you have enough "
-                            + "space to the left, front, and back to run the OpMode.");
+                + ", starting on the right-most edge. So, make sure you have enough "
+                + "space to the left, front, and back to run the OpMode.");
         telemetryA.update();
     }
 

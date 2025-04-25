@@ -5,6 +5,9 @@ import com.pedropathing.localization.Pose;
 import com.pedropathing.util.Constants;
 import  com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.DcMotor;
+
+import pedroPathing.AutoClass.Lift;
 
 import pedroPathing.constants.FConstants;
 import pedroPathing.constants.LConstants;
@@ -21,12 +24,27 @@ public class ExampleFieldCentricTeleop extends OpMode {
     private Follower follower;
     private final Pose startPose = new Pose(0,0,0);
 
+    private LiftController liftController; // Lift controller instance
+
+
+
     /** This method is call once when init is played, it initializes the follower **/
     @Override
     public void init() {
         Constants.setConstants(FConstants.class, LConstants.class);
         follower = new Follower(hardwareMap);
         follower.setStartingPose(startPose);
+
+        Constants.setConstants(FConstants.class, LConstants.class);
+
+        follower = new Follower(hardwareMap);
+        follower.setStartingPose(startPose);
+
+        DcMotor liftMotor = hardwareMap.get(DcMotor.class, "lift"); // Ensure this matches your config
+
+        // Initialize LiftController with appropriate limits
+        liftController = new LiftController(liftMotor, 0, 1000, 50);
+
     }
 
     /** This method is called continuously after Init while waiting to be started. **/
@@ -51,13 +69,28 @@ public class ExampleFieldCentricTeleop extends OpMode {
         - Robot-Centric Mode: false
         */
 
+
+
+
+
         follower.setTeleOpMovementVectors(-gamepad1.left_stick_y, -gamepad1.left_stick_x, -gamepad1.right_stick_x, false);
         follower.update();
+        if (gamepad1.dpad_up) {
+            liftController.moveUp();
+        } else if (gamepad1.dpad_down) {
+            liftController.moveDown();
+        } else {
+            liftController.stop();  // now holds position
+        }
+
+
 
         /* Telemetry Outputs of our Follower */
         telemetry.addData("X", follower.getPose().getX());
         telemetry.addData("Y", follower.getPose().getY());
         telemetry.addData("Heading in Degrees", Math.toDegrees(follower.getPose().getHeading()));
+        telemetry.addData("Lift Pos", liftController.getCurrentPosition());
+
 
         /* Update Telemetry to the Driver Hub */
         telemetry.update();
