@@ -53,12 +53,11 @@ public class StateMachineWithPathing extends OpMode {
 
 
     private final Pose startPos = new Pose(7.117, 71.644, Math.toRadians(Heading));
-    private final Pose SubmersiblePos = new Pose(43, 69, Math.toRadians(Heading));
-    private final Pose Submersible2Pos = new Pose(48, 69, Math.toRadians(Heading));
+    private final Pose SubmersiblePos = new Pose(31, 71.644, Math.toRadians(Heading));
+    private final Pose Submersible2Pos = new Pose(33, 71.644, Math.toRadians(Heading));
+    private final Pose SubmersibleBackPos = new Pose(24, 71.644, Math.toRadians(Heading));
 
 
-
-    private final Pose SubmersibleBackPos = new Pose(34, 69, Math.toRadians(Heading));
     private final Pose clearBracePos = new Pose(34, 15, Math.toRadians(Heading));
     private final Pose behindSamplePos = new Pose(85, 15, Math.toRadians(Heading));
     private final Pose behindSampleToPushPos = new Pose(85, 1, Math.toRadians(Heading));
@@ -76,7 +75,7 @@ public class StateMachineWithPathing extends OpMode {
 
     private final Pose specimenPickUpPos = new Pose(13, 3, Math.toRadians(Heading));
     private final Pose specimenPickUpControlPoint = new Pose(50, -8.5, Math.toRadians(Heading));
-    private final Pose specimenPickUpAdjustPos = new Pose(12, 3, Math.toRadians(Heading));
+    private final Pose specimenPickUpAdjustPos = new Pose(8, 3, Math.toRadians(Heading));
 
 
     /*Bezier line*/
@@ -248,12 +247,14 @@ public class StateMachineWithPathing extends OpMode {
             case 3:
 
                 if(!follower.isBusy()) {
-                    follower.setMaxPower(unitTwoPathSpeed);
-                    follower.followPath(moveClearBrace, unitTestTwo);
+                    //follower.setMaxPower(unitTwoPathSpeed);
+                    //follower.followPath(moveClearBrace, unitTestTwo);
 
 
-                    setPathState(4);
+                    setPathState(-1);
                 }
+
+                /*
 
                 if (follower.getCurrentTValue() > 0.5){
                     linearMotor.setTargetPosition(armPickup);
@@ -263,6 +264,8 @@ public class StateMachineWithPathing extends OpMode {
                     claw.setPosition(0.0);
                     wrist.setPosition(0.0);
                 }
+
+                 */
 
 
                 break;
@@ -691,7 +694,7 @@ public class StateMachineWithPathing extends OpMode {
        // claw = hardwareMap.get(Servo.class, "claw");
 
         armPickup = -1010;
-        armClip = -415;
+        armClip = -410;
         armClipDown =-370;
 
 
@@ -706,9 +709,9 @@ public class StateMachineWithPathing extends OpMode {
 
 
         unitTestOne = true;
-        unitTestTwo = true;
-        unitTestThree = true;
-        unitTestFour = true;
+        unitTestTwo = false;
+        unitTestThree = false;
+        unitTestFour = false;
 
 
 
