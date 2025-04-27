@@ -179,6 +179,12 @@ public class StateMachineWithPathing extends OpMode {
                 .build();
 
 
+        moveGetScoreSpecimen = follower.pathBuilder()
+                .addPath(new BezierLine(new Point(SubmersiblePos), new Point(specimenPickUpPos)))
+                .setLinearHeadingInterpolation(SubmersiblePos.getHeading(), specimenPickUpPos.getHeading())
+                .build();
+
+
     }
 
     public void autonomousPathUpdate() {
@@ -348,6 +354,8 @@ public class StateMachineWithPathing extends OpMode {
                 }
                 break;
 
+            /*End of unit 4.1*/
+
             case 12:
 
                 if(!follower.isBusy()) {
@@ -358,12 +366,16 @@ public class StateMachineWithPathing extends OpMode {
                 }
                 break;
 
+
+
+
             case 13:
 
                 if(!follower.isBusy()) {
 
                     follower.setMaxPower(unitFourPathSpeed);
                     follower.followPath(moveScoreSpecimen,unitTestFour);
+
 
 
 
@@ -386,7 +398,7 @@ public class StateMachineWithPathing extends OpMode {
                 if(!follower.isBusy()) {
 
                     follower.setMaxPower(unitOnePathSpeed);
-                    follower.followPath(moveToSubmersible2, unitTestOne);
+                    follower.followPath(moveToSubmersible2, unitTestFour);
 
                     setPathState(15);
 
@@ -398,15 +410,245 @@ public class StateMachineWithPathing extends OpMode {
                     linearMotor.setPower(motorSpeed);
 
                 }
+
+
                 break;
 
+
+
             case 15:
+
+                if(!follower.isBusy()) {
+                    follower.setMaxPower(unitFourPathSpeed);
+                    follower.followPath(moveGetScoreSpecimen);
+
+
+
+                    setPathState(16);
+                }
+
+
+                break;
+
+            case 16:
+
+                if(!follower.isBusy()) {
+                    follower.setMaxPower(unitFourPathSpeed);
+                    follower.followPath(moveSpecimenPickUpAdjust);
+
+                    setPathState(17);
+                }
+
+                if (follower.getCurrentTValue()>0.2){
+
+                    claw.setPosition(0.0);
+                    wrist.setPosition(0.0);
+
+                    linearMotor.setTargetPosition(armPickup);
+                    linearMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                    linearMotor.setPower(motorSpeed);
+
+
+                }
+                break;
+
+            case 17:
+
+                if(!follower.isBusy()) {
+
+                    follower.setMaxPower(0.19);
+                    follower.followPath(moveSpecimenPickUpAdjust, unitTestFour);
+                    setPathState(18);
+                }
+                break;
+///
+            case 18:
+
+                if(!follower.isBusy()) {
+
+                    follower.setMaxPower(unitFourPathSpeed);
+                    follower.followPath(moveScoreSpecimen,unitTestFour);
+
+
+
+                    setPathState(19);
+                }
+                if (follower.getCurrentTValue()>0.0){
+                    claw.setPosition(0.17);
+                    wrist.setPosition(0.7);
+
+                    linearMotor.setTargetPosition(armClip);
+                    linearMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                    linearMotor.setPower(motorSpeed);
+
+
+                }
+                break;
+
+            case 19:
+
+                if(!follower.isBusy()) {
+
+                    follower.setMaxPower(unitOnePathSpeed);
+                    follower.followPath(moveToSubmersible2, unitTestFour);
+
+                    setPathState(20);
+
+                }
+                if (follower.getCurrentTValue() > 0.88){
+                    claw.setPosition(0.20);
+                    linearMotor.setTargetPosition(armClipDown);
+                    linearMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                    linearMotor.setPower(motorSpeed);
+
+                }
+
+
+                break;
+
+                /*end of unit 4.2*/
+
+
+
+
+            case 20:
+
+                if(!follower.isBusy()) {
+
+                    follower.setMaxPower(unitFourPathSpeed);
+                    follower.followPath(moveScoreSpecimen,unitTestFour);
+
+
+
+
+                    setPathState(21);
+                }
+                if (follower.getCurrentTValue()>0.0){
+                    claw.setPosition(0.17);
+                    wrist.setPosition(0.7);
+
+                    linearMotor.setTargetPosition(armClip);
+                    linearMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                    linearMotor.setPower(motorSpeed);
+
+
+                }
+                break;
+
+            case 21:
+
+                if(!follower.isBusy()) {
+
+                    follower.setMaxPower(unitOnePathSpeed);
+                    follower.followPath(moveToSubmersible2, unitTestFour);
+
+                    setPathState(22);
+
+                }
+                if (follower.getCurrentTValue() > 0.88){
+                    claw.setPosition(0.20);
+                    linearMotor.setTargetPosition(armClipDown);
+                    linearMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                    linearMotor.setPower(motorSpeed);
+
+                }
+
+
+                break;
+
+
+
+            case 22:
+
+                if(!follower.isBusy()) {
+                    follower.setMaxPower(unitFourPathSpeed);
+                    follower.followPath(moveGetScoreSpecimen);
+
+
+
+                    setPathState(23);
+                }
+
+
+                break;
+
+            case 23:
+
+                if(!follower.isBusy()) {
+                    follower.setMaxPower(unitFourPathSpeed);
+                    follower.followPath(moveSpecimenPickUpAdjust);
+
+                    setPathState(24);
+                }
+
+                if (follower.getCurrentTValue()>0.2){
+
+                    claw.setPosition(0.0);
+                    wrist.setPosition(0.0);
+
+                    linearMotor.setTargetPosition(armPickup);
+                    linearMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                    linearMotor.setPower(motorSpeed);
+
+
+                }
+                break;
+///
+            case 24:
+
+                if(!follower.isBusy()) {
+
+                    follower.setMaxPower(unitFourPathSpeed);
+                    follower.followPath(moveScoreSpecimen,unitTestFour);
+
+
+
+                    setPathState(25);
+                }
+                if (follower.getCurrentTValue()>0.0){
+                    claw.setPosition(0.17);
+                    wrist.setPosition(0.7);
+
+                    linearMotor.setTargetPosition(armClip);
+                    linearMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                    linearMotor.setPower(motorSpeed);
+
+
+                }
+                break;
+
+            case 25:
+
+                if(!follower.isBusy()) {
+
+                    follower.setMaxPower(unitOnePathSpeed);
+                    follower.followPath(moveToSubmersible2, unitTestFour);
+
+                    setPathState(26);
+
+                }
+                if (follower.getCurrentTValue() > 0.88){
+                    claw.setPosition(0.20);
+                    linearMotor.setTargetPosition(armClipDown);
+                    linearMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                    linearMotor.setPower(motorSpeed);
+
+                }
+
+
+                break;
+
+
+            case 26:
 
                 if(!follower.isBusy()) {
 
                     setPathState(-1);
                 }
                 break;
+
+
+
         }
     }
 
@@ -449,7 +691,7 @@ public class StateMachineWithPathing extends OpMode {
        // claw = hardwareMap.get(Servo.class, "claw");
 
         armPickup = -1010;
-        armClip = -410;
+        armClip = -415;
         armClipDown =-370;
 
 
@@ -457,9 +699,11 @@ public class StateMachineWithPathing extends OpMode {
 
 
         unitOnePathSpeed = 0.4;
-        unitTwoPathSpeed = 0.6;
-        unitThreePathSpeed = 0.8;
+        unitTwoPathSpeed = 1.0;
+        unitThreePathSpeed = 1.0;
         unitFourPathSpeed = 0.8;
+
+
 
         unitTestOne = true;
         unitTestTwo = true;
