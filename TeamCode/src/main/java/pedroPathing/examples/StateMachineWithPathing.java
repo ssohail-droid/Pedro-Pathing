@@ -76,6 +76,7 @@ public class StateMachineWithPathing extends OpMode {
 
     private final Pose specimenPickUpPos = new Pose(13, 3, Math.toRadians(Heading));
     private final Pose specimenPickUpControlPoint = new Pose(50, -8.5, Math.toRadians(Heading));
+    private final Pose specimenPickUpAdjustPos = new Pose(12, 3, Math.toRadians(Heading));
 
 
     /*Bezier line*/
@@ -88,6 +89,10 @@ public class StateMachineWithPathing extends OpMode {
     private PathChain movePushColourSampleOne;
     private PathChain movePushColourSampleTwo;
     private PathChain movePushColourSampleThree;
+    private PathChain moveSpecimenPickUpAdjust;
+    private PathChain moveScoreSpecimen;
+    private PathChain moveGetScoreSpecimen;
+
     /*Bezier curve*/
     private Path moveToPushColourSampleTwo;
     private Path moveToPushColourSampleThree;
@@ -162,6 +167,18 @@ public class StateMachineWithPathing extends OpMode {
         moveToSpecimenPickUp = new Path(new BezierCurve(new Point(pushColourSampleThreePos), /* Control Point */ new Point(specimenPickUpControlPoint), new Point(specimenPickUpPos)));
         moveToSpecimenPickUp.setLinearHeadingInterpolation(pushColourSampleThreePos.getHeading(), specimenPickUpPos.getHeading());
 
+        moveSpecimenPickUpAdjust = follower.pathBuilder()
+                .addPath(new BezierLine(new Point(specimenPickUpPos), new Point(specimenPickUpAdjustPos)))
+                .setLinearHeadingInterpolation(specimenPickUpPos.getHeading(), specimenPickUpAdjustPos.getHeading())
+                .build();
+
+
+        moveScoreSpecimen = follower.pathBuilder()
+                .addPath(new BezierLine(new Point(specimenPickUpAdjustPos), new Point(SubmersiblePos)))
+                .setLinearHeadingInterpolation(specimenPickUpAdjustPos.getHeading(), SubmersiblePos.getHeading())
+                .build();
+
+
     }
 
     public void autonomousPathUpdate() {
@@ -209,10 +226,11 @@ public class StateMachineWithPathing extends OpMode {
                 if(!follower.isBusy()) {
                     follower.setMaxPower(unitOnePathSpeed);
                     follower.followPath(moveBackFromSubmersible, unitTestOne);
-                    if (follower.getCurrentTValue()>0.1){
-                        claw.setPosition(0.0);
-                    }
+
                     setPathState(3);
+                }
+                if (follower.getCurrentTValue()>0.7){
+                    claw.setPosition(0.0);
                 }
 
                 break;
@@ -227,15 +245,17 @@ public class StateMachineWithPathing extends OpMode {
                     follower.setMaxPower(unitTwoPathSpeed);
                     follower.followPath(moveClearBrace, unitTestTwo);
 
-                    if (follower.getCurrentTValue() > 0.0){
-                        linearMotor.setTargetPosition(armPickup);
-                        linearMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                        linearMotor.setPower(motorSpeed);
 
-                        claw.setPosition(0.0);
-                        wrist.setPosition(0.0);
-                    }
                     setPathState(4);
+                }
+
+                if (follower.getCurrentTValue() > 0.5){
+                    linearMotor.setTargetPosition(armPickup);
+                    linearMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                    linearMotor.setPower(motorSpeed);
+
+                    claw.setPosition(0.0);
+                    wrist.setPosition(0.0);
                 }
 
 
@@ -315,22 +335,72 @@ public class StateMachineWithPathing extends OpMode {
                 break;
                         /*All above is unit test 3.*/
 
+                        /*End of unit test 4.*/
+
             case 11:
 
                 if(!follower.isBusy()) {
 
                     follower.setMaxPower(unitFourPathSpeed);
                     follower.followPath(moveToSpecimenPickUp, unitTestFour);
-
-                    if (follower.getCurrentTValue()>0.6){
-
-                        follower.setMaxPower(0.08);
-                    }
                     setPathState(12);
+
                 }
                 break;
 
             case 12:
+
+                if(!follower.isBusy()) {
+
+                    follower.setMaxPower(0.19);
+                    follower.followPath(moveSpecimenPickUpAdjust, unitTestFour);
+                    setPathState(13);
+                }
+                break;
+
+            case 13:
+
+                if(!follower.isBusy()) {
+
+                    follower.setMaxPower(unitFourPathSpeed);
+                    follower.followPath(moveScoreSpecimen,unitTestFour);
+
+
+
+                    setPathState(14);
+                }
+                if (follower.getCurrentTValue()>0.0){
+                    claw.setPosition(0.17);
+                    wrist.setPosition(0.7);
+
+                    linearMotor.setTargetPosition(armClip);
+                    linearMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                    linearMotor.setPower(motorSpeed);
+
+
+                }
+                break;
+
+            case 14:
+
+                if(!follower.isBusy()) {
+
+                    follower.setMaxPower(unitOnePathSpeed);
+                    follower.followPath(moveToSubmersible2, unitTestOne);
+
+                    setPathState(15);
+
+                }
+                if (follower.getCurrentTValue() > 0.88){
+                    claw.setPosition(0.20);
+                    linearMotor.setTargetPosition(armClipDown);
+                    linearMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                    linearMotor.setPower(motorSpeed);
+
+                }
+                break;
+
+            case 15:
 
                 if(!follower.isBusy()) {
 
@@ -378,8 +448,8 @@ public class StateMachineWithPathing extends OpMode {
         //wrist = hardwareMap.get(Servo.class, "wrist");
        // claw = hardwareMap.get(Servo.class, "claw");
 
-        armPickup = -1000;
-        armClip = -415;
+        armPickup = -1010;
+        armClip = -410;
         armClipDown =-370;
 
 
