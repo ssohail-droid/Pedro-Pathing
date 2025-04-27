@@ -30,7 +30,7 @@ import pedroPathing.constants.LConstants;
  * @version 2.0, 11/28/2024
  */
 
-@Autonomous(name = "Specimen Auto", group = "Examples")
+@Autonomous(name = "DO NOT USE!!!!", group = "Examples")
 public class ExampleBucketAuto extends OpMode {
 
     private Follower follower;
