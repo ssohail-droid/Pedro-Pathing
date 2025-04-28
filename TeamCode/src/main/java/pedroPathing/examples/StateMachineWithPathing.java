@@ -25,7 +25,7 @@ public class StateMachineWithPathing extends OpMode {
     private Timer pathTimer, actionTimer, opmodeTimer;
     private int pathState;
     private final int Heading = 180;
-    private final int SamplePushWall = 16;
+    private final int SamplePushWall = 20;
 
     DcMotor linearMotor; // variables must be created here but initialized in loop()
     Servo wrist;
@@ -52,26 +52,28 @@ public class StateMachineWithPathing extends OpMode {
 
 
 
-    private final Pose startPos = new Pose(7.117, 71.644, Math.toRadians(Heading));
-    private final Pose SubmersiblePos = new Pose(31, 71.644, Math.toRadians(Heading));
-    private final Pose Submersible2Pos = new Pose(33, 71.644, Math.toRadians(Heading));
-    private final Pose SubmersibleBackPos = new Pose(24, 71.644, Math.toRadians(Heading));
+    private final Pose startPos = new Pose(9, 72, Math.toRadians(Heading));
+    private final Pose SubmersiblePos = new Pose(33.5, 72, Math.toRadians(Heading));
+    private final Pose Submersible2Pos = new Pose(39, 72, Math.toRadians(Heading));
+    private final Pose SubmersibleBackPos = new Pose(24, 72, Math.toRadians(Heading));
 
 
-    private final Pose clearBracePos = new Pose(34, 15, Math.toRadians(Heading));
-    private final Pose behindSamplePos = new Pose(85, 15, Math.toRadians(Heading));
-    private final Pose behindSampleToPushPos = new Pose(85, 1, Math.toRadians(Heading));
+    private final Pose clearBracePos = new Pose(24, 35.1, Math.toRadians(Heading));
+    private final Pose behindSamplePos = new Pose(60, 35.1, Math.toRadians(Heading));
+    private final Pose behindSampleToPushPos = new Pose(60, 24, Math.toRadians(Heading));
 
 
-    private final Pose pushColourSampleOnePos = new Pose(SamplePushWall, 1, Math.toRadians(Heading));
-    private final Pose returnToSampleTwoForPushPos = new Pose(85, -18, Math.toRadians(Heading));
-    private final Pose returnToSampleTwoForPushControlPoint = new Pose(90, 30, Math.toRadians(Heading));
 
-    private final Pose pushColourSampleTwoPos = new Pose(SamplePushWall, -18, Math.toRadians(Heading));
-    private final Pose returnToSampleThreeForPushPos = new Pose(85, -20, Math.toRadians(Heading));//need to change to (0,)
-    private final Pose returnToSampleThreeForPushControlPoint = new Pose(70, 19, Math.toRadians(Heading));
+    private final Pose pushColourSampleOnePos = new Pose(SamplePushWall, 24, Math.toRadians(Heading));
+    private final Pose returnToSampleTwoForPushPos = new Pose(60, 13, Math.toRadians(Heading));
+    private final Pose returnToSampleTwoForPushControlPoint = new Pose(60.968698517298186, 35.82207578253706, Math.toRadians(Heading));
+    //
 
-    private final Pose pushColourSampleThreePos = new Pose(SamplePushWall, -20, Math.toRadians(Heading));
+    private final Pose pushColourSampleTwoPos = new Pose(SamplePushWall, 13, Math.toRadians(Heading));
+    private final Pose returnToSampleThreeForPushPos = new Pose(60, 9.5, Math.toRadians(Heading));//need to change to (0,)
+    private final Pose returnToSampleThreeForPushControlPoint = new Pose(55.98682042833608, 18.50411861614498, Math.toRadians(Heading));
+
+    private final Pose pushColourSampleThreePos = new Pose(SamplePushWall, 9.5, Math.toRadians(Heading));
 
     private final Pose specimenPickUpPos = new Pose(13, 3, Math.toRadians(Heading));
     private final Pose specimenPickUpControlPoint = new Pose(50, -8.5, Math.toRadians(Heading));
@@ -196,7 +198,7 @@ public class StateMachineWithPathing extends OpMode {
                     linearMotor.setTargetPosition(armClip);
                     linearMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                     linearMotor.setPower(motorSpeed);
-                    claw.setPosition(0.17);
+                    claw.setPosition(0.19);
                     wrist.setPosition(0.7);
                 }
                 if(!follower.isBusy()) {
@@ -247,14 +249,14 @@ public class StateMachineWithPathing extends OpMode {
             case 3:
 
                 if(!follower.isBusy()) {
-                    //follower.setMaxPower(unitTwoPathSpeed);
-                    //follower.followPath(moveClearBrace, unitTestTwo);
+                    follower.setMaxPower(unitTwoPathSpeed);
+                    follower.followPath(moveClearBrace, unitTestTwo);
 
 
-                    setPathState(-1);
+                    setPathState(4);
                 }
 
-                /*
+
 
                 if (follower.getCurrentTValue() > 0.5){
                     linearMotor.setTargetPosition(armPickup);
@@ -265,7 +267,7 @@ public class StateMachineWithPathing extends OpMode {
                     wrist.setPosition(0.0);
                 }
 
-                 */
+
 
 
                 break;
@@ -350,9 +352,9 @@ public class StateMachineWithPathing extends OpMode {
 
                 if(!follower.isBusy()) {
 
-                    follower.setMaxPower(unitFourPathSpeed);
-                    follower.followPath(moveToSpecimenPickUp, unitTestFour);
-                    setPathState(12);
+                    //follower.setMaxPower(unitFourPathSpeed);
+                    //follower.followPath(moveToSpecimenPickUp, unitTestFour);
+                    setPathState(-12);
 
                 }
                 break;
@@ -694,7 +696,7 @@ public class StateMachineWithPathing extends OpMode {
        // claw = hardwareMap.get(Servo.class, "claw");
 
         armPickup = -1010;
-        armClip = -410;
+        armClip = -425;
         armClipDown =-370;
 
 
@@ -702,8 +704,8 @@ public class StateMachineWithPathing extends OpMode {
 
 
         unitOnePathSpeed = 0.4;
-        unitTwoPathSpeed = 1.0;
-        unitThreePathSpeed = 1.0;
+        unitTwoPathSpeed = 0.4;
+        unitThreePathSpeed = 0.4;
         unitFourPathSpeed = 0.8;
 
 
