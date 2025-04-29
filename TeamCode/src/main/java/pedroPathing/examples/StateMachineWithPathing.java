@@ -75,9 +75,9 @@ public class StateMachineWithPathing extends OpMode {
 
     private final Pose pushColourSampleThreePos = new Pose(SamplePushWall, 9.5, Math.toRadians(Heading));
 
-    private final Pose specimenPickUpPos = new Pose(13, 3, Math.toRadians(Heading));
-    private final Pose specimenPickUpControlPoint = new Pose(50, -8.5, Math.toRadians(Heading));
-    private final Pose specimenPickUpAdjustPos = new Pose(8, 3, Math.toRadians(Heading));
+    private final Pose specimenPickUpPos = new Pose(17, 24, Math.toRadians(Heading));
+    private final Pose specimenPickUpControlPoint = new Pose(23.72322899505766, 21.113673805601323, Math.toRadians(Heading));
+    private final Pose specimenPickUpAdjustPos = new Pose(14, 24, Math.toRadians(Heading));
 
 
     /*Bezier line*/
@@ -352,9 +352,9 @@ public class StateMachineWithPathing extends OpMode {
 
                 if(!follower.isBusy()) {
 
-                    //follower.setMaxPower(unitFourPathSpeed);
-                    //follower.followPath(moveToSpecimenPickUp, unitTestFour);
-                    setPathState(-12);
+                    follower.setMaxPower(unitFourPathSpeed);
+                    follower.followPath(moveToSpecimenPickUp, unitTestFour);
+                    setPathState(12);
 
                 }
                 break;
@@ -378,14 +378,16 @@ public class StateMachineWithPathing extends OpMode {
 
                 if(!follower.isBusy()) {
 
-                    follower.setMaxPower(unitFourPathSpeed);
-                    follower.followPath(moveScoreSpecimen,unitTestFour);
+                   // follower.setMaxPower(unitFourPathSpeed);
+                   // follower.followPath(moveScoreSpecimen,unitTestFour);
 
 
 
 
-                    setPathState(14);
+                    setPathState(-14);
                 }
+
+                /*
                 if (follower.getCurrentTValue()>0.0){
                     claw.setPosition(0.17);
                     wrist.setPosition(0.7);
@@ -396,6 +398,8 @@ public class StateMachineWithPathing extends OpMode {
 
 
                 }
+
+                 */
                 break;
 
             case 14:
@@ -628,6 +632,7 @@ public class StateMachineWithPathing extends OpMode {
 
                     follower.setMaxPower(unitOnePathSpeed);
                     follower.followPath(moveToSubmersible2, unitTestFour);
+
 
                     setPathState(26);
 
