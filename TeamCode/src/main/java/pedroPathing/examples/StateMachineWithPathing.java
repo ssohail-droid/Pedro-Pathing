@@ -27,6 +27,8 @@ public class StateMachineWithPathing extends OpMode {
     private final int Heading = 180;
     private final int SamplePushWall = 20;
 
+    private boolean clawClose = false;
+
     DcMotor linearMotor; // variables must be created here but initialized in loop()
     Servo wrist;
     Servo claw;
@@ -77,7 +79,7 @@ public class StateMachineWithPathing extends OpMode {
 
     private final Pose specimenPickUpPos = new Pose(17, 28, Math.toRadians(Heading));
     private final Pose specimenPickUpControlPoint = new Pose(23.72322899505766, 21.113673805601323, Math.toRadians(Heading));
-    private final Pose specimenPickUpAdjustPos = new Pose(10, 28, Math.toRadians(Heading));
+    private final Pose specimenPickUpAdjustPos = new Pose(13, 28, Math.toRadians(Heading));
 
 
     /*Bezier line*/
@@ -366,18 +368,15 @@ public class StateMachineWithPathing extends OpMode {
 
                 if(!follower.isBusy()) {
 
-                    follower.setMaxPower(0.5);
+                    follower.setMaxPower(0.3);
                     follower.followPath(moveSpecimenPickUpAdjust, unitTestFour);
                     setPathState(13);
                 }
 
-                if (follower.getCurrentTValue()>0.4){
-                    claw.setPosition(0.18);
-
-                }
 
 
 
+                telemetry.addData("T VAl",follower.getCurrentTValue());
 
                 break;
 
@@ -388,25 +387,25 @@ public class StateMachineWithPathing extends OpMode {
 
 
 
-
-
-
-
                 if(!follower.isBusy()) {
 
-                   follower.setMaxPower(unitFourPathSpeed);
-                   follower.followPath(moveScoreSpecimen,unitTestFour);
+                   //follower.setMaxPower(unitFourPathSpeed);
+                 // follower.followPath(moveScoreSpecimen,unitTestFour);
 
 
 
 
-                    setPathState(14);
+                    setPathState(-14);
                 }
 
+                claw.setPosition(0.18);
+                clawClose = true;
 
 
 
 
+
+                /*
                 if (follower.getCurrentTValue()>0.5){
                     wrist.setPosition(0.7);
                     linearMotor.setTargetPosition(armClip);
@@ -415,9 +414,7 @@ public class StateMachineWithPathing extends OpMode {
 
                 }
 
-
-
-
+                 */
 
                 break;
 
@@ -425,12 +422,14 @@ public class StateMachineWithPathing extends OpMode {
 
                 if(!follower.isBusy()) {
 
-                    follower.setMaxPower(unitOnePathSpeed);
-                    follower.followPath(moveToSubmersible2, unitTestFour);
+                    //follower.setMaxPower(unitOnePathSpeed);
+                   // follower.followPath(moveToSubmersible2, unitTestFour);
 
                     setPathState(15);
 
                 }
+
+                /*
                 if (follower.getCurrentTValue() > 0.88){
                     claw.setPosition(0.20);
                     linearMotor.setTargetPosition(armClipDown);
@@ -438,6 +437,8 @@ public class StateMachineWithPathing extends OpMode {
                     linearMotor.setPower(motorSpeed);
 
                 }
+
+                 */
 
 
                 break;
@@ -447,12 +448,12 @@ public class StateMachineWithPathing extends OpMode {
             case 15:
 
                 if(!follower.isBusy()) {
-                    //follower.setMaxPower(unitFourPathSpeed);
-                    //follower.followPath(moveGetScoreSpecimen);
+                    follower.setMaxPower(unitFourPathSpeed);
+                    follower.followPath(moveGetScoreSpecimen);
 
 
 
-                    setPathState(-16);
+                    setPathState(16);
                 }
 
 
@@ -719,7 +720,7 @@ public class StateMachineWithPathing extends OpMode {
         //wrist = hardwareMap.get(Servo.class, "wrist");
        // claw = hardwareMap.get(Servo.class, "claw");
 
-        armPickup = -1053;
+        armPickup = -1000;
         armClip = -425;
         armClipDown =-370;
 
@@ -735,9 +736,9 @@ public class StateMachineWithPathing extends OpMode {
 
 
         unitTestOne = true;
-        unitTestTwo = false;
-        unitTestThree = false;
-        unitTestFour = false;
+        unitTestTwo = true;
+        unitTestThree = true;
+        unitTestFour = true;
 
 
 
@@ -747,6 +748,9 @@ public class StateMachineWithPathing extends OpMode {
         telemetry.addData("x", follower.getPose().getX());
         telemetry.addData("y", follower.getPose().getY());
         telemetry.addData("heading", follower.getPose().getHeading());
+        telemetry.addData("claw Close", clawClose);
+
+
         telemetry.update();
     }
 
