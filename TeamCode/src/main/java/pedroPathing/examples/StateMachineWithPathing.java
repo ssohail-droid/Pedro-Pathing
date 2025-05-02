@@ -410,6 +410,7 @@ public class StateMachineWithPathing extends OpMode {
 
 
                     }
+
                     if (time < 3000) {
                         linearMotor.setTargetPosition(armClip);
                         linearMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
