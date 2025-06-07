@@ -1,4 +1,4 @@
-package pedroPathing.AutoClass;
+package pedroPathing.AutoClass.Actuator;
 
 import com.rowanmcalpin.nextftc.core.Subsystem;
 import com.rowanmcalpin.nextftc.core.command.Command;

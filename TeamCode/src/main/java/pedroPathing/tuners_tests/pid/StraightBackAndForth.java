@@ -34,7 +34,7 @@ import pedroPathing.constants.LConstants;
 public class StraightBackAndForth extends OpMode {
     private Telemetry telemetryA;
 
-    public static double DISTANCE = 120;
+    public static double DISTANCE = 40;
 
     private boolean forward = true;
 

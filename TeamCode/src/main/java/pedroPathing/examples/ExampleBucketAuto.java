@@ -12,11 +12,8 @@ import com.pedropathing.util.Timer;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import  com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Servo;
 
-import pedroPathing.AutoClass.Lift;
-import pedroPathing.AutoClass.MotorTicController;
 import pedroPathing.constants.FConstants;
 import pedroPathing.constants.LConstants;
 

@@ -1,4 +1,4 @@
-package pedroPathing.AutoClass;
+package pedroPathing.AutoClass.Actuator;
 
 import com.qualcomm.robotcore.hardware.DcMotor;
 
