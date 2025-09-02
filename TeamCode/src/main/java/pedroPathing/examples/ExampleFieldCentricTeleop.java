@@ -22,7 +22,6 @@ public class ExampleFieldCentricTeleop extends OpMode {
     private Follower follower;
     private final Pose startPose = new Pose(0,0,0);
 
-    private LiftController liftController; // Lift controller instance
 
 
 
@@ -38,10 +37,7 @@ public class ExampleFieldCentricTeleop extends OpMode {
         follower = new Follower(hardwareMap);
         follower.setStartingPose(startPose);
 
-        DcMotor liftMotor = hardwareMap.get(DcMotor.class, "lift"); // Ensure this matches your config
 
-        // Initialize LiftController with appropriate limits
-        liftController = new LiftController(liftMotor, 0, 1000, 50);
 
     }
 
@@ -73,13 +69,6 @@ public class ExampleFieldCentricTeleop extends OpMode {
 
         follower.setTeleOpMovementVectors(-gamepad1.left_stick_y, -gamepad1.left_stick_x, -gamepad1.right_stick_x, false);
         follower.update();
-        if (gamepad1.dpad_up) {
-            liftController.moveUp();
-        } else if (gamepad1.dpad_down) {
-            liftController.moveDown();
-        } else {
-            liftController.stop();  // now holds position
-        }
 
 
 
@@ -87,7 +76,6 @@ public class ExampleFieldCentricTeleop extends OpMode {
         telemetry.addData("X", follower.getPose().getX());
         telemetry.addData("Y", follower.getPose().getY());
         telemetry.addData("Heading in Degrees", Math.toDegrees(follower.getPose().getHeading()));
-        telemetry.addData("Lift Pos", liftController.getCurrentPosition());
 
 
         /* Update Telemetry to the Driver Hub */
