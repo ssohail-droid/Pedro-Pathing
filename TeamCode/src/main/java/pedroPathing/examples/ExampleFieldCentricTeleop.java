@@ -22,7 +22,7 @@ public class ExampleFieldCentricTeleop extends OpMode {
     private Follower follower;
     private final Pose startPose = new Pose(0,0,0);
 
-    private LiftController liftController; // Lift controller instance
+    private LiftController liftController; // Lift controller instanceoo
 
 
 
