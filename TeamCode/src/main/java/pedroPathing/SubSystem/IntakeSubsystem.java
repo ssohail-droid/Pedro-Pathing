@@ -1,0 +1,40 @@
+package pedroPathing.SubSystem;
+
+import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
+
+public class IntakeSubsystem {
+    private final DcMotor intakeMotor;
+    private double intakePower = 1.0; // configurable
+
+    public IntakeSubsystem(DcMotor intakeMotor) {
+        this.intakeMotor = intakeMotor;
+        this.intakeMotor.setDirection(DcMotorSimple.Direction.FORWARD);
+        this.intakeMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        stop();
+    }
+
+    public void setPower(double power) {
+        this.intakePower = Math.max(-1.0, Math.min(1.0, power));
+        // If running, update to new power
+        if (Math.abs(intakeMotor.getPower()) > 1e-6) {
+            intakeMotor.setPower(-intakePower); // negative to match your original flow
+        }
+    }
+
+    public void start() {
+        intakeMotor.setPower(-intakePower);
+    }
+
+    public void reverse() {
+        intakeMotor.setPower(intakePower);
+    }
+
+    public void stop() {
+        intakeMotor.setPower(0.0);
+    }
+
+    public boolean isRunning() {
+        return Math.abs(intakeMotor.getPower()) > 1e-6;
+    }
+}

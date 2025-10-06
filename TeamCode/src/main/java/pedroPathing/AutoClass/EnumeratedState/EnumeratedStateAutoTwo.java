@@ -18,10 +18,10 @@ import pedroPathing.constants.LConstants;
 public class EnumeratedStateAutoTwo extends OpMode {
 
     // ===== CONSTANTS =====
-    private static final Pose START_POSE = new Pose(12.573311367380562, 10.91268533772653, Math.toRadians(0));
-    private static final Pose SUBMERSIBLE_POSE = new Pose(129.7660626029654, 130.47775947281713, Math.toRadians(180));
+    private static final Pose START_POSE = new Pose(132.8500823723229, 133.7990115321252, Math.toRadians(0));
+    private static final Pose SUBMERSIBLE_POSE = new Pose(14.233937397034596, 13, Math.toRadians(180));
     private static final double MOVEMENT_SPEED = 1;
-    private static final double PRECISION_SPEED = 0.3;
+    private static final double PRECISION_SPEED = 1;
     private static final double ACTION_TIMEOUT = 5.0;
     private static final double SETTLING_TIME = 0.5;
 
