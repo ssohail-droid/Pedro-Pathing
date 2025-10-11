@@ -3,38 +3,45 @@ package pedroPathing.SubSystem;
 import com.qualcomm.robotcore.hardware.Servo;
 
 public class ServoSubsystem {
-    private final Servo holdServo, pushServo;
+    private final Servo pushServo;
+    private double pushEngagedPos = 1.0;   // Servo on
+    private double pushRetractedPos = 0.0;  // Servo off
+    private boolean pushActive = false;     // Tracks state
 
-    // Expose positions so OpModes can choose behavior
-    private double holdEngagedPos = 1.0;
-    private double holdReleasedPos = 0.0;
-    private double pushEngagedPos = 1.0;
-    private double pushRetractPos = 0.0;
-
-    public ServoSubsystem(Servo holdServo, Servo pushServo) {
-        this.holdServo = holdServo;
+    public ServoSubsystem(Servo pushServo) {
         this.pushServo = pushServo;
-        // Initialize to safe state
-        engageHold();
-        retractPush();
+        retractPush(); // Initialize to off position
     }
 
-    // Hold control
-    public void engageHold() { holdServo.setPosition(holdEngagedPos); }
-    public void releaseHold() { holdServo.setPosition(holdReleasedPos); }
-
-    // Push control
-    public void engagePush() { pushServo.setPosition(pushEngagedPos); }
-    public void retractPush() { pushServo.setPosition(pushRetractPos); }
-
-    // Optional setters to tune positions at runtime
-    public void setHoldPositions(double engaged, double released) {
-        this.holdEngagedPos = engaged;
-        this.holdReleasedPos = released;
+    // Toggle between on/off
+    public void togglePush() {
+        pushActive = !pushActive;
+        if (pushActive) {
+            pushServo.setPosition(pushEngagedPos);
+        } else {
+            pushServo.setPosition(pushRetractedPos);
+        }
     }
 
+    // Explicit on/off commands (optional)
+    public void engagePush() {
+        pushActive = true;
+        pushServo.setPosition(pushEngagedPos);
+    }
+
+    public void retractPush() {
+        pushActive = false;
+        pushServo.setPosition(pushRetractedPos);
+    }
+
+    // For telemetry/debug
+    public boolean isPushActive() {
+        return pushActive;
+    }
+
+    // Optional tuning at runtime
     public void setPushPositions(double engaged, double retracted) {
         this.pushEngagedPos = engaged;
-        this.pushRetractPos = retracted;
+        this.pushRetractedPos = retracted;
     }
 }
