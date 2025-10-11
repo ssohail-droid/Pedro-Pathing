@@ -40,12 +40,12 @@ public class FConstants {
         FollowerConstants.mass = 10;
 
 
-        FollowerConstants.xMovement = 91.8304832620753; /// this
-        FollowerConstants.yMovement = 77.4318996233015;
+        FollowerConstants.xMovement = 62.2991; /// this
+        FollowerConstants.yMovement = 47.4744;
 
 
-        FollowerConstants.forwardZeroPowerAcceleration = -59.00706329948933;
-        FollowerConstants.lateralZeroPowerAcceleration = -95.74046809358087;
+        FollowerConstants.forwardZeroPowerAcceleration = -17.1777;
+        FollowerConstants.lateralZeroPowerAcceleration = -55.2604;
 
 
         FollowerConstants.translationalPIDFCoefficients.setCoefficients(0.1,0,0.01,0);
