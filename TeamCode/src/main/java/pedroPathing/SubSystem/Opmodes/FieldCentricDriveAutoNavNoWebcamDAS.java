@@ -1,0 +1,319 @@
+package pedroPathing.SubSystem.Opmodes;
+
+import com.pedropathing.follower.Follower;
+import com.pedropathing.localization.Pose;
+import com.pedropathing.util.Constants;
+import com.qualcomm.robotcore.eventloop.opmode.OpMode;
+import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.util.ElapsedTime;
+
+import com.acmerobotics.dashboard.FtcDashboard;
+import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
+import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
+import com.acmerobotics.dashboard.config.Config;
+
+import pedroPathing.constants.FConstants;
+import pedroPathing.constants.LConstants;
+import pedroPathing.SubSystem.IntakeSubsystem;
+import pedroPathing.SubSystem.TransferSubsystem;
+import pedroPathing.SubSystem.ServoSubsystem;
+
+@Config
+@TeleOp(name = "Field-Centric with AutoNav + PID Shooter + Stable", group = "Subsystems")
+public class FieldCentricDriveAutoNavNoWebcamDAS extends OpMode {
+
+    // PedroPathing follower
+    private Follower follower;
+
+    // Field coordinates
+    private final Pose startPose = new Pose(72, 72, 0);
+    private final Pose targetPoint1 = new Pose(108, 108, Math.toRadians(225));
+    private final Pose targetPoint2 = new Pose(108, 36, Math.toRadians(135));
+
+    private boolean navigatingToPoint = false;
+    private boolean waitingForContinue = false;
+    private Pose currentTarget = null;
+
+    private static final double POSITION_TOLERANCE = 0.2;
+    private static final double HEADING_TOLERANCE = 0.1;
+
+    // Subsystems
+    private IntakeSubsystem intake;
+    private TransferSubsystem transfer;
+    private ServoSubsystem servos;
+
+    // Shooter motors
+    private DcMotorEx shooter1, shooter2;
+
+    // Shooter PIDF tunable parameters
+    public static double kP = 0.02;
+    public static double kI = 0.00001;
+    public static double kD = 0.00001;
+    public static double kF = 0.0003;
+    public static double SHOOTER_TARGET_VELOCITY = 1800;
+    public static double SHOOTER_IDLE_VELOCITY = 200;
+    public static double MAX_POWER = 1.0;
+    public static double SHOOTER_VELOCITY_TOLERANCE = 30;
+
+    // PID state
+    private double shooterIntegral = 0;
+    private double lastError = 0;
+    private final ElapsedTime pidTimer = new ElapsedTime();
+    private double lastPosition = 0;
+    private double lastTime = 0;
+    private boolean shooterSpinning = false;
+
+    // Velocity filter
+    private double filteredVelocity = 0;
+    private double alpha = 0.2; // smoothing factor
+
+    // Dashboard
+    private FtcDashboard dashboard;
+
+    // Toggles
+    private boolean aPressed = false, bPressed = false, xPressed = false;
+    private boolean intakeFeedToggle = false, intakeFeedPressed = false;
+    private boolean shooterToggle = false, shooterTogglePressed = false;
+
+    @Override
+    public void init() {
+        Constants.setConstants(FConstants.class, LConstants.class);
+        follower = new Follower(hardwareMap);
+        follower.setStartingPose(startPose);
+
+        DcMotorEx intakeMotor = hardwareMap.get(DcMotorEx.class, "intake_motor");
+        shooter1 = hardwareMap.get(DcMotorEx.class, "shooter_motor_1");
+        shooter2 = hardwareMap.get(DcMotorEx.class, "shooter_motor_2");
+        DcMotorEx feedMotor = hardwareMap.get(DcMotorEx.class, "feed_motor");
+        Servo pushServo = hardwareMap.get(Servo.class, "push_servo");
+
+        intake = new IntakeSubsystem(intakeMotor);
+        transfer = new TransferSubsystem(feedMotor);
+        servos = new ServoSubsystem(pushServo);
+
+        // Use RUN_USING_ENCODER for closed-loop velocity control
+        shooter1.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
+        shooter2.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
+        shooter1.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
+        shooter2.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
+        shooter1.setDirection(DcMotorEx.Direction.REVERSE);
+
+        dashboard = FtcDashboard.getInstance();
+        telemetry = new MultipleTelemetry(telemetry, dashboard.getTelemetry());
+
+        lastPosition = getAverageShooterPosition();
+        lastTime = pidTimer.seconds();
+
+        telemetry.addLine("Field-Centric Drive with AutoNav + PID Shooter (Stable)");
+        telemetry.update();
+    }
+
+    @Override
+    public void start() {
+        follower.startTeleopDrive();
+    }
+
+    @Override
+    public void loop() {
+
+        // Waiting for continue mode
+        if (waitingForContinue) {
+            telemetry.addLine("=== ARRIVED AT TARGET ===");
+            telemetry.addLine("Press B to continue...");
+            follower.setTeleOpMovementVectors(0, 0, 0, false);
+            follower.update();
+
+            if (gamepad1.b && !bPressed) {
+                waitingForContinue = false;
+                currentTarget = null;
+                follower.startTeleopDrive();
+                bPressed = true;
+            } else if (!gamepad1.b) bPressed = false;
+
+            telemetry.update();
+            return;
+        }
+
+        // Auto navigation controls
+        if (gamepad1.a && !aPressed && !navigatingToPoint) {
+            startNavigationToPoint(targetPoint1);
+            aPressed = true;
+        } else if (!gamepad1.a) aPressed = false;
+
+        if (gamepad1.x && !xPressed && !navigatingToPoint) {
+            startNavigationToPoint(targetPoint2);
+            xPressed = true;
+        } else if (!gamepad1.x) xPressed = false;
+
+        if (gamepad1.b && !bPressed && navigatingToPoint) {
+            cancelNavigation();
+            bPressed = true;
+        } else if (!gamepad1.b) bPressed = false;
+
+        Pose robotPose = follower.getPose();
+        if (robotPose == null) robotPose = startPose;
+
+        if (navigatingToPoint) {
+            follower.update();
+            if (hasArrivedAtTarget()) {
+                navigatingToPoint = false;
+                waitingForContinue = true;
+                follower.breakFollowing();
+            }
+        } else {
+            follower.setTeleOpMovementVectors(
+                    gamepad1.left_stick_y,
+                    gamepad1.left_stick_x,
+                    -gamepad1.right_stick_x,
+                    false
+            );
+            follower.update();
+        }
+
+        // Intake toggle
+        if (gamepad2.a && !intakeFeedPressed) {
+            intakeFeedToggle = !intakeFeedToggle;
+            intakeFeedPressed = true;
+        } else if (!gamepad2.a) intakeFeedPressed = false;
+
+        // Shooter toggle
+        if (gamepad2.right_trigger > 0.5 && !shooterTogglePressed) {
+            shooterToggle = !shooterToggle;
+            shooterTogglePressed = true;
+        } else if (gamepad2.right_trigger <= 0.5) shooterTogglePressed = false;
+
+        shooterSpinning = shooterToggle;
+
+        // Shooter PID update
+        double shooterPower = updateShooterPID();
+
+        // Automatically run intake/transfer only when shooter is at target velocity
+        if (intakeFeedToggle && isShooterAtTarget()) {
+            intake.start();
+            transfer.start();
+        } else {
+            intake.stop();
+            transfer.stop();
+        }
+
+        // Push servo
+        if (gamepad2.y) servos.engagePush();
+        else servos.retractPush();
+
+        // Telemetry
+        telemetry.addLine("=== SHOOTER PID ===");
+        telemetry.addData("Spinning", shooterSpinning);
+        telemetry.addData("Shooter Power", "%.3f", shooterPower);
+        telemetry.addData("Current Vel (tps)", "%.0f", getShooterVelocity());
+        telemetry.addData("Target Vel (tps)", shooterSpinning ? SHOOTER_TARGET_VELOCITY : SHOOTER_IDLE_VELOCITY);
+        telemetry.addData("Error", "%.1f", (shooterSpinning ? SHOOTER_TARGET_VELOCITY : SHOOTER_IDLE_VELOCITY) - getShooterVelocity());
+        telemetry.addData("At Target Velocity", isShooterAtTarget());
+
+        telemetry.addLine("=== ROBOT POSE ===");
+        telemetry.addData("X", "%.2f", robotPose.getX());
+        telemetry.addData("Y", "%.2f", robotPose.getY());
+        telemetry.addData("Heading", "%.1f°", Math.toDegrees(robotPose.getHeading()));
+        telemetry.update();
+    }
+
+    // PID control
+    private double updateShooterPID() {
+        double desiredVel = shooterSpinning ? SHOOTER_TARGET_VELOCITY : SHOOTER_IDLE_VELOCITY;
+        double currentVel = getShooterVelocity();
+
+        double error = desiredVel - currentVel;
+        double currentTime = pidTimer.seconds();
+        double dt = currentTime - lastTime;
+        if (dt <= 0) dt = 0.02;
+
+        shooterIntegral += error * dt;
+        double derivative = (error - lastError) / dt;
+        lastError = error;
+        lastTime = currentTime;
+
+        double output = kP * error + kI * shooterIntegral + kD * derivative + kF * (desiredVel / 2000.0);
+        output = Math.max(-MAX_POWER, Math.min(MAX_POWER, output));
+
+        shooter1.setPower(output);
+        shooter2.setPower(output);
+
+        // Dashboard telemetry
+        TelemetryPacket packet = new TelemetryPacket();
+        packet.put("Shooter/TargetVelocity", desiredVel);
+        packet.put("Shooter/CurrentVelocity", currentVel);
+        packet.put("Shooter/Error", error);
+        packet.put("Shooter/Power", output);
+        dashboard.sendTelemetryPacket(packet);
+
+        return output;
+    }
+
+    private double getShooterVelocity() {
+        double newPos = getAverageShooterPosition();
+        double newTime = pidTimer.seconds();
+        double deltaPos = newPos - lastPosition;
+        double deltaTime = newTime - lastTime;
+        lastPosition = newPos;
+
+        double vel = deltaTime > 0 ? deltaPos / deltaTime : 0;
+        filteredVelocity = alpha * vel + (1 - alpha) * filteredVelocity;
+        return filteredVelocity;
+    }
+
+    private double getAverageShooterPosition() {
+        return (shooter1.getCurrentPosition() + shooter2.getCurrentPosition()) / 2.0;
+    }
+
+    private boolean isShooterAtTarget() {
+        double targetVel = shooterSpinning ? SHOOTER_TARGET_VELOCITY : SHOOTER_IDLE_VELOCITY;
+        double currentVel = getShooterVelocity();
+        return Math.abs(targetVel - currentVel) <= SHOOTER_VELOCITY_TOLERANCE;
+    }
+
+    // AutoNav helpers
+    private void startNavigationToPoint(Pose target) {
+        currentTarget = target;
+        navigatingToPoint = true;
+        follower.followPath(follower.pathBuilder()
+                .addPath(new com.pedropathing.pathgen.BezierLine(
+                        new com.pedropathing.pathgen.Point(follower.getPose()),
+                        new com.pedropathing.pathgen.Point(target)
+                ))
+                .setLinearHeadingInterpolation(follower.getPose().getHeading(), target.getHeading())
+                .build());
+    }
+
+    private void cancelNavigation() {
+        navigatingToPoint = false;
+        currentTarget = null;
+        waitingForContinue = false;
+        follower.breakFollowing();
+        follower.startTeleopDrive();
+    }
+
+    private boolean hasArrivedAtTarget() {
+        if (currentTarget == null) return false;
+        Pose robotPose = follower.getPose();
+        if (robotPose == null) robotPose = startPose;
+
+        double dx = currentTarget.getX() - robotPose.getX();
+        double dy = currentTarget.getY() - robotPose.getY();
+        double distError = Math.hypot(dx, dy);
+
+        double headingError = Math.abs(currentTarget.getHeading() - robotPose.getHeading());
+        while (headingError > Math.PI) headingError -= 2 * Math.PI;
+        while (headingError < -Math.PI) headingError += 2 * Math.PI;
+
+        return distError < POSITION_TOLERANCE && Math.abs(headingError) < HEADING_TOLERANCE;
+    }
+
+    @Override
+    public void stop() {
+        shooter1.setPower(0);
+        shooter2.setPower(0);
+        intake.stop();
+        transfer.stop();
+    }
+}

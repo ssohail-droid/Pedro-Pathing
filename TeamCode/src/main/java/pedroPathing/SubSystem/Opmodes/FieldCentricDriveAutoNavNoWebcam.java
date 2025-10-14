@@ -6,6 +6,7 @@ import com.pedropathing.util.Constants;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.Servo;
 
 import pedroPathing.constants.FConstants;
@@ -25,18 +26,12 @@ import pedroPathing.SubSystem.ServoSubsystem;
  * - Right Stick X: Rotate
  * - A: Go to halfway bottom-left corner
  * - X: Go to halfway bottom-right corner
- * - Y: Go to top middle (example)
  * - B: Cancel autonomous navigation or continue after arrival (ADDED)
- * - Left Trigger: Start Intake
- * - Left Bumper: Stop Intake
- * - Right Trigger: Start Transfer
- * - Right Bumper: Stop Transfer
  *
  * GAMEPAD 2 (Operator):
- * - A: Spin Up Shooter
- * - B: Set Shooter to Idle
- * - X: Stop Shooter
- * - Y: Toggle Push Servo (ON/OFF)
+ * - A: Toggle Intake and Feed (on/off)
+ * - Right Trigger: Toggle Shooter motor (on/off)
+ * - Y: Hold button for Push Servo (while held engaged, else retracted)
  */
 @TeleOp(name = "Field-Centric with Auto Navigation Pause Until B", group = "Subsystems")
 public class FieldCentricDriveAutoNavNoWebcam extends OpMode {
@@ -45,24 +40,17 @@ public class FieldCentricDriveAutoNavNoWebcam extends OpMode {
     private Follower follower;
 
     // === FIELD COORDINATES ===
-    // 144x144 inches total, 72x72 center
-    // (0,0) bottom-left, (144,144) top-right
-
-    // Start pose: center, facing south (toward bottom wall)
     private final Pose startPose = new Pose(72, 72, 0);
-
-    // Target poses for autonomous navigation
-    private final Pose targetPoint1 = new Pose(90, 90, Math.toRadians(225));  // Halfway to bottom-left, +45° heading
-    private final Pose targetPoint2 = new Pose(90, 54, Math.toRadians(135)); // Halfway to bottom-right, -45° heading
-    private final Pose targetPoint3 = new Pose(72, 72, 0);   // Back to center
+    private final Pose targetPoint1 = new Pose(108, 108, Math.toRadians(225));
+    private final Pose targetPoint2 = new Pose(108, 36, Math.toRadians(135));
 
     // Navigation state
     private boolean navigatingToPoint = false;
-    private boolean waitingForContinue = false; // ADDED
+    private boolean waitingForContinue = false;
     private Pose currentTarget = null;
 
-    // Tolerances for "arrived" detection
-    private static final double POSITION_TOLERANCE = 0.2;  // inches
+    // Tolerances
+    private static final double POSITION_TOLERANCE = 0.2;
     private static final double HEADING_TOLERANCE = 0.1;
 
     // Subsystems
@@ -77,6 +65,17 @@ public class FieldCentricDriveAutoNavNoWebcam extends OpMode {
     private boolean xPressed = false;
     private boolean yPressed = false;
 
+    // Gamepad2 toggles
+    private boolean intakeFeedToggle = false;
+    private boolean intakeFeedTogglePressed = false;
+
+    private boolean shooterToggle = false;
+    private boolean shooterTogglePressed = false;
+
+    // Shooter velocity settings (ticks/sec)
+    private static final double SHOOTER_TARGET_VELOCITY = 1800; // example target velocity
+    private static final double SHOOTER_IDLE_VELOCITY = 200;    // slow spin/reverse
+
     @Override
     public void init() {
         // Initialize PedroPathing constants and follower
@@ -86,8 +85,10 @@ public class FieldCentricDriveAutoNavNoWebcam extends OpMode {
 
         // Initialize mechanism hardware
         DcMotor intakeMotor = hardwareMap.get(DcMotor.class, "intake_motor");
-        DcMotor shooter1 = hardwareMap.get(DcMotor.class, "shooter_motor_1");
-        DcMotor shooter2 = hardwareMap.get(DcMotor.class, "shooter_motor_2");
+        DcMotorEx shooter1 = hardwareMap.get(DcMotorEx.class, "shooter_motor_1");
+        DcMotorEx shooter2 = hardwareMap.get(DcMotorEx.class, "shooter_motor_2");
+        shooter = new ShooterSubsystem(shooter1, shooter2);
+
         DcMotor feedMotor = hardwareMap.get(DcMotor.class, "feed_motor");
         Servo pushServo = hardwareMap.get(Servo.class, "push_servo");
 
@@ -97,9 +98,16 @@ public class FieldCentricDriveAutoNavNoWebcam extends OpMode {
         transfer = new TransferSubsystem(feedMotor);
         servos = new ServoSubsystem(pushServo);
 
+        // Set default shooter velocities
+        shooter.setTargetVelocity(SHOOTER_TARGET_VELOCITY);
+        shooter.setIdleVelocity(SHOOTER_IDLE_VELOCITY);
+
         telemetry.addLine("Field-Centric Drive with Auto Navigation");
-        telemetry.addLine("A/X/Y: Navigate to set points");
+        telemetry.addLine("A/X: Navigate to set points");
         telemetry.addLine("B: Cancel navigation or Continue after arrival (ADDED)");
+        telemetry.addLine("GAMEPAD2 A: Toggle Intake and Feed");
+        telemetry.addLine("GAMEPAD2 Right Trigger: Toggle Shooter (velocity control)");
+        telemetry.addLine("GAMEPAD2 Y: Hold for Push Servo");
         telemetry.update();
     }
 
@@ -111,17 +119,16 @@ public class FieldCentricDriveAutoNavNoWebcam extends OpMode {
     @Override
     public void loop() {
 
-        // ===== WAITING MODE (ADDED) =====
+        // ===== WAITING MODE =====
         if (waitingForContinue) {
             telemetry.addLine("=== ARRIVED AT TARGET ===");
             telemetry.addLine("Robot stopped. Press B to continue...");
             follower.setTeleOpMovementVectors(0, 0, 0, false);
             follower.update();
 
-            // Wait until B is pressed to continue manual control
             if (gamepad1.b && !bPressed) {
                 waitingForContinue = false;
-                currentTarget = null; // MOVED HERE ✅
+                currentTarget = null;
                 follower.startTeleopDrive();
                 telemetry.addLine(">>> CONTINUED <<<");
                 bPressed = true;
@@ -130,55 +137,39 @@ public class FieldCentricDriveAutoNavNoWebcam extends OpMode {
             }
 
             telemetry.update();
-            return; // Stop rest of loop while waiting
+            return;
         }
 
         // ===== AUTONOMOUS NAVIGATION CONTROL =====
         if (gamepad1.a && !aPressed && !navigatingToPoint) {
             startNavigationToPoint(targetPoint1);
             aPressed = true;
-        } else if (!gamepad1.a) {
-            aPressed = false;
-        }
+        } else if (!gamepad1.a) aPressed = false;
 
         if (gamepad1.x && !xPressed && !navigatingToPoint) {
             startNavigationToPoint(targetPoint2);
             xPressed = true;
-        } else if (!gamepad1.x) {
-            xPressed = false;
-        }
-
-        if (gamepad1.y && !yPressed && !navigatingToPoint) {
-            startNavigationToPoint(targetPoint3);
-            yPressed = true;
-        } else if (!gamepad1.y) {
-            yPressed = false;
-        }
+        } else if (!gamepad1.x) xPressed = false;
 
         if (gamepad1.b && !bPressed && navigatingToPoint) {
             cancelNavigation();
             bPressed = true;
-        } else if (!gamepad1.b) {
-            bPressed = false;
-        }
+        } else if (!gamepad1.b) bPressed = false;
 
-        // ===== DRIVE CONTROL =====
         Pose robotPose = follower.getPose();
         if (robotPose == null) robotPose = startPose;
 
         if (navigatingToPoint) {
-            // Autonomous navigation mode
             follower.update();
 
             if (hasArrivedAtTarget()) {
                 navigatingToPoint = false;
-                waitingForContinue = true; // ADDED
-                follower.breakFollowing(); // ADDED - stop movement
+                waitingForContinue = true;
+                follower.breakFollowing();
                 telemetry.addLine(">>> ARRIVED AT TARGET <<<");
                 telemetry.addLine("Robot stopped. Press B to continue...");
             }
 
-            // Display navigation telemetry only if target is still set
             if (currentTarget != null) {
                 double dx = currentTarget.getX() - robotPose.getX();
                 double dy = currentTarget.getY() - robotPose.getY();
@@ -195,9 +186,8 @@ public class FieldCentricDriveAutoNavNoWebcam extends OpMode {
                 telemetry.addData("Heading Error", "%.1f°", headingError);
                 telemetry.addLine("Press B to cancel");
             }
-
         } else {
-            // Manual field-centric drive mode
+            // Manual field-centric drive
             follower.setTeleOpMovementVectors(
                     gamepad1.left_stick_y,
                     gamepad1.left_stick_x,
@@ -207,44 +197,42 @@ public class FieldCentricDriveAutoNavNoWebcam extends OpMode {
             follower.update();
         }
 
-        // ===== GAMEPAD 2: INTAKE & TRANSFER =====
-        if (gamepad2.left_trigger > 0.5) {
-            intake.start();
-        }
-        if (gamepad2.left_bumper) {
-            intake.stop();
+        // ===== GAMEPAD 2: Intake & Feed toggle =====
+        if (gamepad2.a && !intakeFeedTogglePressed) {
+            intakeFeedToggle = !intakeFeedToggle;
+            intakeFeedTogglePressed = true;
+
+            if (intakeFeedToggle) {
+                intake.start();
+                transfer.start();
+            } else {
+                intake.stop();
+                transfer.stop();
+            }
+        } else if (!gamepad2.a) intakeFeedTogglePressed = false;
+
+        // ===== GAMEPAD 2: Shooter toggle (velocity-based) =====
+        if (gamepad2.right_trigger > 0.5 && !shooterTogglePressed) {
+            shooterToggle = !shooterToggle;
+            shooterTogglePressed = true;
+        } else if (gamepad2.right_trigger <= 0.5) {
+            shooterTogglePressed = false;
         }
 
-        if (gamepad2.right_trigger > 0.5) {
-            transfer.start();
-        }
-        if (gamepad2.right_bumper) {
-            transfer.stop();
-        }
-
-        // ===== GAMEPAD 2: SHOOTER =====
-        if (gamepad2.a) {
-            shooter.spinUp();
-        }
-        if (gamepad2.b) {
-            shooter.setIdle();
-        }
-        if (gamepad2.x) {
-            shooter.stop();
+        if (shooterToggle) {
+            shooter.spinUp();  // runs at target velocity
+        } else {
+            shooter.setIdle(); // runs at idle velocity
         }
 
-        // ===== GAMEPAD 2: PUSH SERVO TOGGLE =====
-        if (gamepad2.y && !yPressed) {
-            servos.togglePush();
-            yPressed = true;
-        } else if (!gamepad2.y) {
-            yPressed = false;
-        }
+        // ===== GAMEPAD 2: Push Servo hold =====
+        if (gamepad2.y) servos.engagePush();
+        else servos.retractPush();
 
         // ===== TELEMETRY =====
-        if (!navigatingToPoint && !waitingForContinue) {
+        if (!navigatingToPoint && !waitingForContinue)
             telemetry.addLine("=== MANUAL DRIVE MODE ===");
-        }
+
         telemetry.addLine("=== ROBOT POSE ===");
         telemetry.addData("X", "%.2f", robotPose.getX());
         telemetry.addData("Y", "%.2f", robotPose.getY());
@@ -253,16 +241,18 @@ public class FieldCentricDriveAutoNavNoWebcam extends OpMode {
         telemetry.addLine("=== MECHANISMS ===");
         telemetry.addData("Intake", intake.isRunning() ? "Running" : "Stopped");
         telemetry.addData("Transfer", transfer.isRunning() ? "Running" : "Stopped");
-        telemetry.addData("Shooter", shooter.isSpinning() ? "Spinning" : "Idle/Stopped");
+        telemetry.addData("Shooter", shooter.isSpinning() ? "At Target" : "Idle");
+        telemetry.addData("Shooter Vel", "%.0f tps", shooter.getShooterVelocity());
         telemetry.addData("Push Servo", servos.isPushActive() ? "ENGAGED" : "RETRACTED");
 
         telemetry.update();
     }
 
-    // ===== NAVIGATION HELPERS =====
+    // ===== AUTONOMOUS NAVIGATION HELPERS =====
     private void startNavigationToPoint(Pose target) {
         currentTarget = target;
         navigatingToPoint = true;
+
         follower.followPath(follower.pathBuilder()
                 .addPath(new com.pedropathing.pathgen.BezierLine(
                         new com.pedropathing.pathgen.Point(follower.getPose()),
@@ -275,14 +265,13 @@ public class FieldCentricDriveAutoNavNoWebcam extends OpMode {
     private void cancelNavigation() {
         navigatingToPoint = false;
         currentTarget = null;
-        waitingForContinue = false; // ADDED
+        waitingForContinue = false;
         follower.breakFollowing();
         follower.startTeleopDrive();
     }
 
     private boolean hasArrivedAtTarget() {
         if (currentTarget == null) return false;
-
         Pose robotPose = follower.getPose();
         if (robotPose == null) robotPose = startPose;
 

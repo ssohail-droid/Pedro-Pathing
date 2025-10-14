@@ -1,42 +1,46 @@
 package pedroPathing.SubSystem;
 
-import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.hardware.DcMotor;
 
 public class ShooterSubsystem {
-    private final DcMotor shooterMotor1, shooterMotor2;
-    private double shooterPower = 0.5; // configurable
-    private double idlePower = 0.1;    // configurable small hold
+    private final DcMotorEx shooterMotor1, shooterMotor2;
+    private double targetVelocity = 1800; // ticks per second (example)
+    private double idleVelocity = 200;    // ticks per second idle spin
 
-    public ShooterSubsystem(DcMotor shooterMotor1, DcMotor shooterMotor2) {
+    public ShooterSubsystem(DcMotorEx shooterMotor1, DcMotorEx shooterMotor2) {
         this.shooterMotor1 = shooterMotor1;
         this.shooterMotor2 = shooterMotor2;
 
-        this.shooterMotor1.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        this.shooterMotor2.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        setIdle(); // default to idle on init
+        shooterMotor1.setDirection(DcMotorSimple.Direction.FORWARD);
+        shooterMotor2.setDirection(DcMotorSimple.Direction.REVERSE);
+
+        shooterMotor1.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        shooterMotor2.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+
+        shooterMotor1.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        shooterMotor2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
+        setIdle();
     }
 
-    public void setShooterPower(double power) {
-        this.shooterPower = Math.max(0.0, Math.min(1.0, power));
-        if (isSpinning()) {
-            applySpinPower();
-        }
+    public void setTargetVelocity(double velocityTicksPerSec) {
+        this.targetVelocity = Math.max(0.0, velocityTicksPerSec);
+        if (isSpinning()) applySpinVelocity();
     }
 
-    public void setIdlePower(double power) {
-        this.idlePower = Math.max(0.0, Math.min(0.25, power));
-        if (!isSpinning()) {
-            applyIdlePower();
-        }
+    public void setIdleVelocity(double velocityTicksPerSec) {
+        this.idleVelocity = Math.max(0.0, velocityTicksPerSec);
+        if (!isSpinning()) applyIdleVelocity();
     }
 
     public void spinUp() {
-        applySpinPower();
+        applySpinVelocity();
     }
 
     public void setIdle() {
-        applyIdlePower();
+        applyIdleVelocity();
     }
 
     public void stop() {
@@ -45,21 +49,22 @@ public class ShooterSubsystem {
     }
 
     public boolean isSpinning() {
-        return Math.abs(shooterMotor1.getPower()) > idlePower + 1e-6 ||
-                Math.abs(shooterMotor2.getPower()) > idlePower + 1e-6;
+        // Uses velocity feedback to detect spin state
+        return Math.abs(shooterMotor1.getVelocity()) > idleVelocity + 10 ||
+                Math.abs(shooterMotor2.getVelocity()) > idleVelocity + 10;
     }
 
-    private void applySpinPower() {
-        shooterMotor1.setDirection(DcMotorSimple.Direction.REVERSE);
-        shooterMotor2.setDirection(DcMotorSimple.Direction.REVERSE);
-        shooterMotor1.setPower(-shooterPower);
-        shooterMotor2.setPower( shooterPower);
+    private void applySpinVelocity() {
+        shooterMotor1.setVelocity(targetVelocity);
+        shooterMotor2.setVelocity(targetVelocity);
     }
 
-    private void applyIdlePower() {
-        shooterMotor1.setDirection(DcMotorSimple.Direction.FORWARD);
-        shooterMotor2.setDirection(DcMotorSimple.Direction.FORWARD);
-        shooterMotor1.setPower(-idlePower);
-        shooterMotor2.setPower( idlePower);
+    private void applyIdleVelocity() {
+        shooterMotor1.setVelocity(-idleVelocity);
+        shooterMotor2.setVelocity(-idleVelocity);
+    }
+
+    public double getShooterVelocity() {
+        return (Math.abs(shooterMotor1.getVelocity()) + Math.abs(shooterMotor2.getVelocity())) / 2.0;
     }
 }
