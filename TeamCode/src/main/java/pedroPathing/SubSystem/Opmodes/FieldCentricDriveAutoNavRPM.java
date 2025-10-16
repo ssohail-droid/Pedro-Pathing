@@ -21,13 +21,11 @@ import pedroPathing.SubSystem.TransferSubsystem;
 import pedroPathing.SubSystem.ServoSubsystem;
 
 @Config
-@TeleOp(name = "Field-Centric with AutoNav + PID Shooter + Stable", group = "Subsystems")
-public class FieldCentricDriveAutoNavNoWebcamDAS extends OpMode {
+@TeleOp(name = "Field-Centric AutoNav + RPM Shooter Stable", group = "Subsystems")
+public class FieldCentricDriveAutoNavRPM extends OpMode {
 
-    // PedroPathing follower
     private Follower follower;
 
-    // Field coordinates
     private final Pose startPose = new Pose(72, 72, 0);
     private final Pose targetPoint1 = new Pose(108, 108, Math.toRadians(225));
     private final Pose targetPoint2 = new Pose(108, 36, Math.toRadians(135));
@@ -39,25 +37,23 @@ public class FieldCentricDriveAutoNavNoWebcamDAS extends OpMode {
     private static final double POSITION_TOLERANCE = 0.2;
     private static final double HEADING_TOLERANCE = 0.1;
 
-    // Subsystems
     private IntakeSubsystem intake;
     private TransferSubsystem transfer;
     private ServoSubsystem servos;
 
-    // Shooter motors
     private DcMotorEx shooter1, shooter2;
 
     // Shooter PIDF tunable parameters
-    public static double kP = 0.02;
+    public static double kP = 0.0007;
     public static double kI = 0.00001;
-    public static double kD = 0.00001;
-    public static double kF = 0.0003;
-    public static double SHOOTER_TARGET_VELOCITY = 1800;
-    public static double SHOOTER_IDLE_VELOCITY = 200;
-    public static double MAX_POWER = 1.0;
-    public static double SHOOTER_VELOCITY_TOLERANCE = 30;
+    public static double kD = 0.00005;
+    public static double kF = 0.00015;
 
-    // PID state
+    public static double SHOOTER_TARGET_RPM = 3000;
+    public static double SHOOTER_IDLE_RPM = 50;
+    public static double MAX_POWER = 1.0;
+    public static double SHOOTER_RPM_TOLERANCE = 50;
+
     private double shooterIntegral = 0;
     private double lastError = 0;
     private final ElapsedTime pidTimer = new ElapsedTime();
@@ -66,13 +62,11 @@ public class FieldCentricDriveAutoNavNoWebcamDAS extends OpMode {
     private boolean shooterSpinning = false;
 
     // Velocity filter
-    private double filteredVelocity = 0;
+    private double filteredRPM = 0;
     private double alpha = 0.2; // smoothing factor
 
-    // Dashboard
     private FtcDashboard dashboard;
 
-    // Toggles
     private boolean aPressed = false, bPressed = false, xPressed = false;
     private boolean intakeFeedToggle = false, intakeFeedPressed = false;
     private boolean shooterToggle = false, shooterTogglePressed = false;
@@ -93,7 +87,6 @@ public class FieldCentricDriveAutoNavNoWebcamDAS extends OpMode {
         transfer = new TransferSubsystem(feedMotor);
         servos = new ServoSubsystem(pushServo);
 
-        // Use RUN_USING_ENCODER for closed-loop velocity control
         shooter1.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
         shooter2.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
         shooter1.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
@@ -103,10 +96,10 @@ public class FieldCentricDriveAutoNavNoWebcamDAS extends OpMode {
         dashboard = FtcDashboard.getInstance();
         telemetry = new MultipleTelemetry(telemetry, dashboard.getTelemetry());
 
-        lastPosition = getAverageShooterPosition();
+        lastPosition = shooter1.getCurrentPosition();
         lastTime = pidTimer.seconds();
 
-        telemetry.addLine("Field-Centric Drive with AutoNav + PID Shooter (Stable)");
+        telemetry.addLine("Field-Centric Drive + RPM Shooter PID (Stable)");
         telemetry.update();
     }
 
@@ -118,7 +111,7 @@ public class FieldCentricDriveAutoNavNoWebcamDAS extends OpMode {
     @Override
     public void loop() {
 
-        // Waiting for continue mode
+        // Waiting mode
         if (waitingForContinue) {
             telemetry.addLine("=== ARRIVED AT TARGET ===");
             telemetry.addLine("Press B to continue...");
@@ -136,7 +129,7 @@ public class FieldCentricDriveAutoNavNoWebcamDAS extends OpMode {
             return;
         }
 
-        // Auto navigation controls
+        // AutoNav triggers
         if (gamepad1.a && !aPressed && !navigatingToPoint) {
             startNavigationToPoint(targetPoint1);
             aPressed = true;
@@ -189,7 +182,7 @@ public class FieldCentricDriveAutoNavNoWebcamDAS extends OpMode {
         // Shooter PID update
         double shooterPower = updateShooterPID();
 
-        // Automatically run intake/transfer only when shooter is at target velocity
+        // Run intake/transfer only when shooter at target RPM
         if (intakeFeedToggle && isShooterAtTarget()) {
             intake.start();
             transfer.start();
@@ -206,10 +199,10 @@ public class FieldCentricDriveAutoNavNoWebcamDAS extends OpMode {
         telemetry.addLine("=== SHOOTER PID ===");
         telemetry.addData("Spinning", shooterSpinning);
         telemetry.addData("Shooter Power", "%.3f", shooterPower);
-        telemetry.addData("Current Vel (tps)", "%.0f", getShooterVelocity());
-        telemetry.addData("Target Vel (tps)", shooterSpinning ? SHOOTER_TARGET_VELOCITY : SHOOTER_IDLE_VELOCITY);
-        telemetry.addData("Error", "%.1f", (shooterSpinning ? SHOOTER_TARGET_VELOCITY : SHOOTER_IDLE_VELOCITY) - getShooterVelocity());
-        telemetry.addData("At Target Velocity", isShooterAtTarget());
+        telemetry.addData("Current RPM", "%.0f", getShooterRPM());
+        telemetry.addData("Target RPM", shooterSpinning ? SHOOTER_TARGET_RPM : SHOOTER_IDLE_RPM);
+        telemetry.addData("Error", "%.1f", (shooterSpinning ? SHOOTER_TARGET_RPM : SHOOTER_IDLE_RPM) - getShooterRPM());
+        telemetry.addData("At Target RPM", isShooterAtTarget());
 
         telemetry.addLine("=== ROBOT POSE ===");
         telemetry.addData("X", "%.2f", robotPose.getX());
@@ -218,12 +211,12 @@ public class FieldCentricDriveAutoNavNoWebcamDAS extends OpMode {
         telemetry.update();
     }
 
-    // PID control
+    // ---------------- SHOOTER PID ----------------
     private double updateShooterPID() {
-        double desiredVel = shooterSpinning ? SHOOTER_TARGET_VELOCITY : SHOOTER_IDLE_VELOCITY;
-        double currentVel = getShooterVelocity();
+        double desiredRPM = shooterSpinning ? SHOOTER_TARGET_RPM : SHOOTER_IDLE_RPM;
+        double currentRPM = getShooterRPM();
 
-        double error = desiredVel - currentVel;
+        double error = desiredRPM - currentRPM;
         double currentTime = pidTimer.seconds();
         double dt = currentTime - lastTime;
         if (dt <= 0) dt = 0.02;
@@ -233,7 +226,7 @@ public class FieldCentricDriveAutoNavNoWebcamDAS extends OpMode {
         lastError = error;
         lastTime = currentTime;
 
-        double output = kP * error + kI * shooterIntegral + kD * derivative + kF * (desiredVel / 2000.0);
+        double output = kP * error + kI * shooterIntegral + kD * derivative + kF * (desiredRPM / 6000.0);
         output = Math.max(-MAX_POWER, Math.min(MAX_POWER, output));
 
         shooter1.setPower(output);
@@ -241,8 +234,8 @@ public class FieldCentricDriveAutoNavNoWebcamDAS extends OpMode {
 
         // Dashboard telemetry
         TelemetryPacket packet = new TelemetryPacket();
-        packet.put("Shooter/TargetVelocity", desiredVel);
-        packet.put("Shooter/CurrentVelocity", currentVel);
+        packet.put("Shooter/TargetRPM", desiredRPM);
+        packet.put("Shooter/CurrentRPM", currentRPM);
         packet.put("Shooter/Error", error);
         packet.put("Shooter/Power", output);
         dashboard.sendTelemetryPacket(packet);
@@ -250,29 +243,33 @@ public class FieldCentricDriveAutoNavNoWebcamDAS extends OpMode {
         return output;
     }
 
-    private double getShooterVelocity() {
-        double newPos = getAverageShooterPosition();
-        double newTime = pidTimer.seconds();
-        double deltaPos = newPos - lastPosition;
-        double deltaTime = newTime - lastTime;
-        lastPosition = newPos;
+    private double getShooterRPM() {
+        double currentPos = shooter1.getCurrentPosition();
+        double currentTime = pidTimer.seconds();
 
-        double vel = deltaTime > 0 ? deltaPos / deltaTime : 0;
-        filteredVelocity = alpha * vel + (1 - alpha) * filteredVelocity;
-        return filteredVelocity;
-    }
+        double deltaPos = currentPos - lastPosition;
+        double deltaTime = currentTime - lastTime;
+        if (deltaTime <= 0) deltaTime = 0.02;
 
-    private double getAverageShooterPosition() {
-        return (shooter1.getCurrentPosition() + shooter2.getCurrentPosition()) / 2.0;
+        lastPosition = currentPos;
+        lastTime = currentTime;
+
+        double ticksPerRev = 28 * 20; // REV UltraPlanetary, 20:1 example
+        double revsPerSec = deltaPos / ticksPerRev / deltaTime;
+        double rpm = revsPerSec * 60;
+
+        // Low-pass filter
+        filteredRPM = alpha * rpm + (1 - alpha) * filteredRPM;
+        return filteredRPM;
     }
 
     private boolean isShooterAtTarget() {
-        double targetVel = shooterSpinning ? SHOOTER_TARGET_VELOCITY : SHOOTER_IDLE_VELOCITY;
-        double currentVel = getShooterVelocity();
-        return Math.abs(targetVel - currentVel) <= SHOOTER_VELOCITY_TOLERANCE;
+        double targetRPM = shooterSpinning ? SHOOTER_TARGET_RPM : SHOOTER_IDLE_RPM;
+        double currentRPM = getShooterRPM();
+        return Math.abs(targetRPM - currentRPM) <= SHOOTER_RPM_TOLERANCE;
     }
 
-    // AutoNav helpers
+    // ---------------- AutoNav ----------------
     private void startNavigationToPoint(Pose target) {
         currentTarget = target;
         navigatingToPoint = true;
