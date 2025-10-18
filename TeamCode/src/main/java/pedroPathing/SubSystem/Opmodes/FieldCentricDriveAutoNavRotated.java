@@ -3,6 +3,7 @@ package pedroPathing.SubSystem.Opmodes;
 import com.pedropathing.follower.Follower;
 import com.pedropathing.localization.Pose;
 import com.pedropathing.util.Constants;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -33,6 +34,7 @@ import pedroPathing.SubSystem.ServoSubsystem;
  * - Right Trigger: Toggle Shooter
  * - Y: Hold for Push Servo
  */
+@Disabled
 @TeleOp(name = "use this (Right-Side POV)", group = "Subsystems")
 public class FieldCentricDriveAutoNavRotated extends OpMode {
 

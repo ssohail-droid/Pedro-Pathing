@@ -1,6 +1,7 @@
 package pedroPathing.SubSystem.Opmodes;
 
 import com.qualcomm.hardware.dfrobot.HuskyLens;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -8,6 +9,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 import pedroPathing.SubSystem.IntakeSubsystem;
 import pedroPathing.SubSystem.TransferSubsystem;
 
+@Disabled
 @TeleOp(name = "HuskyLens Auto Intake (Tolerance)", group = "Sensor")
 public class HuskyLensAutoIntake extends LinearOpMode {
 

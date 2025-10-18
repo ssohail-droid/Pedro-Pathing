@@ -1,11 +1,14 @@
 package pedroPathing.examples;
 
 import static java.lang.Thread.sleep;
+
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
+@Disabled
 @com.qualcomm.robotcore.eventloop.opmode.TeleOp(name="Yoga man test", group="Iterative OpMode")
 public class yogaManTest extends OpMode {
     private ElapsedTime runtime = new ElapsedTime();

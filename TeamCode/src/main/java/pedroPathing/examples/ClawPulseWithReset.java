@@ -1,8 +1,10 @@
 package pedroPathing.examples;
 
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.CRServo;
 
+@Disabled
 @com.qualcomm.robotcore.eventloop.opmode.TeleOp(name = "Claw Pulse with Reset", group = "TeleOp")
 public class ClawPulseWithReset extends LinearOpMode {
 

@@ -3,6 +3,7 @@ package pedroPathing.SubSystem.Opmodes;
 import com.pedropathing.follower.Follower;
 import com.pedropathing.localization.Pose;
 import com.pedropathing.util.Constants;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
@@ -20,6 +21,7 @@ import pedroPathing.SubSystem.IntakeSubsystem;
 import pedroPathing.SubSystem.TransferSubsystem;
 import pedroPathing.SubSystem.ServoSubsystem;
 
+@Disabled
 @Config
 @TeleOp(name = "Field-Centric AutoNav + RPM Shooter Stable", group = "Subsystems")
 public class FieldCentricDriveAutoNavRPM extends OpMode {

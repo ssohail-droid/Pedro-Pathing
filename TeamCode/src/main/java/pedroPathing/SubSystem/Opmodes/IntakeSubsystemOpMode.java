@@ -1,11 +1,13 @@
 package pedroPathing.SubSystem.Opmodes;
 
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 
 import pedroPathing.SubSystem.IntakeSubsystem;
 
+@Disabled
 @TeleOp(name="Intake Subsystem OpMode", group="Subsystems")
 public class IntakeSubsystemOpMode extends LinearOpMode {
     private IntakeSubsystem intake;

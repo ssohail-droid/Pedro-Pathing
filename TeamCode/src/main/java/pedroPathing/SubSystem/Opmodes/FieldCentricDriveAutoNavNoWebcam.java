@@ -3,6 +3,7 @@ package pedroPathing.SubSystem.Opmodes;
 import com.pedropathing.follower.Follower;
 import com.pedropathing.localization.Pose;
 import com.pedropathing.util.Constants;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -32,6 +33,7 @@ import pedroPathing.SubSystem.ServoSubsystem;
  * - Right Trigger: Toggle Shooter motor (on/off), reverses slowly when off
  * - Y: Hold button for Push Servo (while held engaged, else retracted)
  */
+@Disabled
 @TeleOp(name = "dont use this", group = "Subsystems")
 public class FieldCentricDriveAutoNavNoWebcam extends OpMode {
 

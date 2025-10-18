@@ -1,5 +1,6 @@
 package pedroPathing.SubSystem.Opmodes;
 
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
@@ -8,6 +9,7 @@ import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
 
 import pedroPathing.SubSystem.VisionSubsystem;
 
+@Disabled
 @TeleOp(name="Vision Subsystem OpMode", group="Subsystems")
 public class VisionSubsystemOpMode extends LinearOpMode {
     private VisionSubsystem vision;

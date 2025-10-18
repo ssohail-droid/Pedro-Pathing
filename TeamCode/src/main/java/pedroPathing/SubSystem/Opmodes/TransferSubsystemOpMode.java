@@ -1,12 +1,14 @@
 package pedroPathing.SubSystem.Opmodes;
 
 
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 
 import pedroPathing.SubSystem.TransferSubsystem;
 
+@Disabled
 @TeleOp(name="Transfer (Feed) Subsystem OpMode", group="Subsystems")
 public class TransferSubsystemOpMode extends LinearOpMode {
     private TransferSubsystem transfer;

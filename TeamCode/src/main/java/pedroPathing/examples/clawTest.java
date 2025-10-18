@@ -2,10 +2,12 @@ package pedroPathing.examples;
 
 import static java.lang.Thread.sleep;
 
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
+@Disabled
 @com.qualcomm.robotcore.eventloop.opmode.TeleOp(name="claw test", group="Iterative OpMode")
 public class clawTest extends OpMode {
     // Declare OpMode members.
