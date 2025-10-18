@@ -6,7 +6,7 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 public class ShooterSubsystem {
     private final DcMotor shooterMotor1, shooterMotor2;
     private double shooterPower = 0.48; // configurable
-    private double idlePower = 0.1;    // configurable small hold
+    private double idlePower = 0.0;    // configurable small hold
 
     public ShooterSubsystem(DcMotor shooterMotor1, DcMotor shooterMotor2) {
         this.shooterMotor1 = shooterMotor1;

@@ -15,12 +15,12 @@ import pedroPathing.SubSystem.ShooterSubsystem;
 import pedroPathing.SubSystem.TransferSubsystem;
 import pedroPathing.SubSystem.ServoSubsystem;
 
-@TeleOp(name = "Red TeleOp (Right POV)", group = "Subsystems")
+@TeleOp(name = "Blue TeleOp (Right POV)", group = "Subsystems")
 public class RedTeleOp extends OpMode {
 
     private Follower follower;
-    private final Pose startPose = new Pose(134.3, 72, 0);
-    private final Pose redTarget = new Pose(108, 36, Math.toRadians(135)); // RED auto point
+    private final Pose startPose = new Pose(134.3, 110.3, 0);
+    private final Pose redTarget = new Pose(108, 108, Math.toRadians(225)); // RED auto point
 
     private boolean navigating = false;
     private boolean waitingForContinue = false;
@@ -34,7 +34,7 @@ public class RedTeleOp extends OpMode {
     private boolean aPressed = false, bPressed = false;
     private boolean intakeFeedToggle = false, intakeFeedPressed = false;
     private boolean shooterToggle = false, shooterPressed = false;
-    private static final double SHOOTER_REVERSE_POWER = -0.1;
+    private static final double SHOOTER_REVERSE_POWER = 0;
 
     private static final double POSITION_TOLERANCE = 0.1;
     private static final double HEADING_TOLERANCE = 0.1;
