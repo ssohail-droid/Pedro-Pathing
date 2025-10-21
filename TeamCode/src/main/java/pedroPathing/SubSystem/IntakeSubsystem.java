@@ -9,7 +9,7 @@ public class IntakeSubsystem {
 
     public IntakeSubsystem(DcMotor intakeMotor) {
         this.intakeMotor = intakeMotor;
-        this.intakeMotor.setDirection(DcMotorSimple.Direction.FORWARD);
+        this.intakeMotor.setDirection(DcMotorSimple.Direction.REVERSE);
         this.intakeMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         stop();
     }

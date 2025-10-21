@@ -9,7 +9,7 @@ public class TransferSubsystem {
 
     public TransferSubsystem(DcMotor feedMotor) {
         this.feedMotor = feedMotor;
-        this.feedMotor.setDirection(DcMotorSimple.Direction.REVERSE);
+        this.feedMotor.setDirection(DcMotorSimple.Direction.FORWARD);
         this.feedMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         stop();
     }
