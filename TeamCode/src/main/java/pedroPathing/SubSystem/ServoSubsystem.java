@@ -4,7 +4,7 @@ import com.qualcomm.robotcore.hardware.Servo;
 
 public class ServoSubsystem {
     private final Servo pushServo;
-    private double pushEngagedPos = 1.0;   // Servo on
+    private double pushEngagedPos = 0.3;   // Servo on
     private double pushRetractedPos = 0.0;  // Servo off
     private boolean pushActive = false;     // Tracks state
 

@@ -13,7 +13,7 @@ import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 public class ShooterSubsystem {
 
     // ===== Dashboard Tunables (same as ShooterTuner) =====
-    public static double targetRPM = 3000;
+    public static double targetRPM = 2500;
 
     public static double kP = 22.0;
     public static double kI = 0.0;
