@@ -24,7 +24,7 @@ public class BlueTeleOpNew extends OpMode {
 
     private Follower follower;
     private final Pose startPose = new Pose(134.3, 34, 0);
-    private final Pose blueTarget = new Pose(108, 36, Math.toRadians(135)); // BLUE auto point
+    private final Pose blueTarget = new Pose(108, 36, Math.toRadians(222.5)); // BLUE auto point
 
     private boolean navigating = false;
     private boolean waitingForContinue = false;
@@ -117,8 +117,8 @@ public class BlueTeleOpNew extends OpMode {
             }
         } else {
             // ===== MANUAL DRIVE (Right POV) =====
-            double rotatedX = -gamepad1.left_stick_x;
-            double rotatedY = gamepad1.left_stick_y;
+            double rotatedX = gamepad1.left_stick_x;
+            double rotatedY = -gamepad1.left_stick_y;
             follower.setTeleOpMovementVectors(rotatedX, rotatedY, -gamepad1.right_stick_x, false);
             follower.update();
         }
