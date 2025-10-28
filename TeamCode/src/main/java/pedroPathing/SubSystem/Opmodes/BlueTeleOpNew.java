@@ -7,10 +7,12 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.util.ElapsedTime;
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
-import com.qualcomm.robotcore.util.ElapsedTime;
+
+import com.qualcomm.hardware.rev.RevBlinkinLedDriver; // ✅ Blinkin import
 
 import pedroPathing.constants.FConstants;
 import pedroPathing.constants.LConstants;
@@ -19,12 +21,12 @@ import pedroPathing.SubSystem.ShooterSubsystem;
 import pedroPathing.SubSystem.TransferSubsystem;
 import pedroPathing.SubSystem.ServoSubsystem;
 
-@TeleOp(name = "BLUE TeleOp (Right POV, Shooter PIDF)", group = "Subsystems")
+@TeleOp(name = "BLUE TeleOp (Right POV, Shooter PIDF + Continuous Rumble)", group = "Subsystems")
 public class BlueTeleOpNew extends OpMode {
 
     private Follower follower;
     private final Pose startPose = new Pose(134.3, 34, 0);
-    private final Pose blueTarget = new Pose(108, 36, Math.toRadians(222.5)); // BLUE auto point
+    private final Pose blueTarget = new Pose(108, 36, Math.toRadians(222.5));
 
     private boolean navigating = false;
     private boolean waitingForContinue = false;
@@ -40,11 +42,17 @@ public class BlueTeleOpNew extends OpMode {
     private boolean shooterToggle = false, shooterPressed = false;
     private boolean servoToggle = false;
     private boolean yPressed = false;
+    private boolean xPressed = false;
+
     private ElapsedTime servoToggleTimer = new ElapsedTime();
     private static final double SERVO_TOGGLE_DELAY = 0.2;
 
     private static final double POSITION_TOLERANCE = 0.1;
     private static final double HEADING_TOLERANCE = 0.1;
+
+    private boolean shooterWasActive = false;
+
+    private RevBlinkinLedDriver blinkin; // ✅ Blinkin field
 
     @Override
     public void init() {
@@ -54,20 +62,24 @@ public class BlueTeleOpNew extends OpMode {
 
         DcMotor intakeMotor = hardwareMap.get(DcMotor.class, "intake_motor");
         DcMotor feedMotor = hardwareMap.get(DcMotor.class, "feed_motor");
+        Servo holdServo = hardwareMap.get(Servo.class, "hold_servo");
         Servo pushServo = hardwareMap.get(Servo.class, "push_servo");
-        
-        // ✅ new shooter subsystem using PIDF velocity control (single motor)
+
         shooter = new ShooterSubsystem(hardwareMap,
                 new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry()));
 
         intake = new IntakeSubsystem(intakeMotor);
         transfer = new TransferSubsystem(feedMotor);
-        servos = new ServoSubsystem(pushServo);
+        servos = new ServoSubsystem(holdServo);
+        servos.setPushServo2(pushServo);
 
-        telemetry.addLine("Blue Alliance TeleOp (Right POV) — Shooter PIDF Ready");
+        blinkin = hardwareMap.get(RevBlinkinLedDriver.class, "blinkin"); // ✅ Initialize Blinkin
+
+        telemetry.addLine("Blue Alliance TeleOp (Right POV) — Shooter PIDF + Continuous Rumble Ready");
         telemetry.addLine("A: Go to Blue Auto Point");
         telemetry.addLine("B: Cancel or Continue");
-        telemetry.addLine("Gamepad2 RT: Toggle Shooter");
+        telemetry.addLine("Gamepad2 RT: Toggle Shooter (Continuous Rumble)");
+        telemetry.addLine("Hold X: Push servo active");
         telemetry.update();
     }
 
@@ -116,7 +128,6 @@ public class BlueTeleOpNew extends OpMode {
                 follower.breakFollowing();
             }
         } else {
-            // ===== MANUAL DRIVE (Right POV) =====
             double rotatedX = gamepad1.left_stick_x;
             double rotatedY = -gamepad1.left_stick_y;
             follower.setTeleOpMovementVectors(rotatedX, rotatedY, -gamepad1.right_stick_x, false);
@@ -124,6 +135,7 @@ public class BlueTeleOpNew extends OpMode {
         }
 
         // ===== GAMEPAD 2 CONTROLS =====
+
         // Intake + Transfer toggle
         if (gamepad2.a && !intakeFeedPressed) {
             intakeFeedToggle = !intakeFeedToggle;
@@ -137,20 +149,35 @@ public class BlueTeleOpNew extends OpMode {
             }
         } else if (!gamepad2.a) intakeFeedPressed = false;
 
-        // Shooter toggle (PIDF velocity control)
+        // Shooter toggle (PIDF velocity control + continuous rumble)
         if (gamepad2.right_trigger > 0.5 && !shooterPressed) {
             shooterToggle = !shooterToggle;
             shooterPressed = true;
         } else if (gamepad2.right_trigger <= 0.5) shooterPressed = false;
 
-        if (shooterToggle) shooter.update();  // maintain velocity
-        else shooter.stop();                  // stop motor
+        if (shooterToggle) {
+            shooter.update();
+
+            if (!shooterWasActive) {
+                shooterWasActive = true;
+                // Start continuous rumble when shooter turns on
+                gamepad2.rumble(1.0, 1.0, 100000); // 100 seconds (effectively continuous)
+            }
+        } else {
+            shooter.stop();
+            if (shooterWasActive) {
+                shooterWasActive = false;
+                // Stop rumble when shooter turns off
+                gamepad2.stopRumble();
+            }
+        }
 
         if (gamepad2.share) {
             intake.reverse();
             transfer.reverse();
         }
 
+        // Hold servo toggle (Y button)
         if (gamepad2.y && !yPressed && servoToggleTimer.seconds() > SERVO_TOGGLE_DELAY) {
             servoToggle = !servoToggle;
             yPressed = true;
@@ -162,6 +189,28 @@ public class BlueTeleOpNew extends OpMode {
             yPressed = false;
         }
 
+        // Push servo HOLD control (hold X to extend, release to retract)
+        if (gamepad2.x) {
+            servos.engagePush2();
+        } else {
+            servos.retractPush2();
+        }
+
+        // ===== LED CONTROL (Blinkin) =====
+        boolean holdEngaged = servos.isPushActive();
+        double shooterRPM = shooter.getRPM();
+        double targetRPM = ShooterSubsystem.targetRPM;
+
+        if (holdEngaged) {
+            // 🔴 Hold gate is closed
+            blinkin.setPattern(RevBlinkinLedDriver.BlinkinPattern.RED);
+        } else if (shooterToggle && shooterRPM >= targetRPM * 0.95) {
+            // ✳️ Shooter is ready
+            blinkin.setPattern(RevBlinkinLedDriver.BlinkinPattern.STROBE_BLUE);
+        } else {
+            // 🟢 Shooter not ready
+            blinkin.setPattern(RevBlinkinLedDriver.BlinkinPattern.BLUE);
+        }
 
         // ===== TELEMETRY =====
         telemetry.addLine(navigating ? "AutoNav: BLUE Target" : "Manual Drive (Right POV)");
@@ -169,8 +218,17 @@ public class BlueTeleOpNew extends OpMode {
         telemetry.addData("Y", "%.2f", pose.getY());
         telemetry.addData("Heading", "%.1f°", Math.toDegrees(pose.getHeading()));
         telemetry.addData("Intake", intake.isRunning() ? "Running" : "Stopped");
-        telemetry.addData("Shooter RPM", "%.1f", shooter.getRPM());
+        telemetry.addData("Shooter RPM", "%.1f", shooterRPM);
         telemetry.addData("Shooter Active", shooterToggle ? "ON" : "OFF");
+        telemetry.addData("Hold Servo", holdEngaged ? "Engaged" : "Retracted");
+        telemetry.addData("Push Servo", servos.isPush2Active() ? "Engaged" : "Retracted");
+
+        // ✅ LED Status Telemetry
+        telemetry.addData("LED Pattern",
+                holdEngaged ? "RED (Hold Closed)" :
+                        (shooterToggle && shooterRPM >= targetRPM * 0.95) ? "STROBE GREEN (Shooter Ready)" :
+                                "GREEN (Shooter Not Ready)");
+
         telemetry.update();
     }
 
