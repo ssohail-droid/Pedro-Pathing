@@ -41,7 +41,7 @@ public class AutonomousBlue2 extends LinearOpMode {
         if (isStopRequested()) return;
 
         shooter.update();
-        sleep(1000); // spin-up buffer
+        sleep(100); // spin-up buffer
 
         double targetRPM = ShooterSubsystem.targetRPM;
         int totalShots = 3;
@@ -121,7 +121,7 @@ public class AutonomousBlue2 extends LinearOpMode {
             // 🔟 Wait before next shot
             telemetry.addLine("Waiting before next shot...");
             telemetry.update();
-            sleep(2000); // optional delay between shots
+            sleep(3000); // optional delay between shots
         }
     }
 }
