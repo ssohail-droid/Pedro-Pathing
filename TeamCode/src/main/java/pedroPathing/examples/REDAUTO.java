@@ -23,8 +23,8 @@ public class REDAUTO extends OpMode {
     private int pathState;
     private final int Heading = 0;
 
-    private final Pose onePos = new Pose(134.3, 110.3, 0);
-    private final Pose TwoPos = new Pose(90, 110.3, Math.toRadians(Heading));
+    private final Pose onePos = new Pose(134.3, 110.3, 180);
+    private final Pose TwoPos = new Pose(90, 110.3, Math.toRadians(180));
 
 
 
