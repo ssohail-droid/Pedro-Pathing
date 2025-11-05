@@ -16,7 +16,7 @@ public class TransferSubsystem {
 
     public void setPower(double power) {
         this.feedPower = Math.max(-1.0, Math.min(1.0, power));
-        if (Math.abs(feedMotor.getPower()) > 1e-6) {
+        if (Math.abs(feedMotor.getPower()) > 1e-6) { // 1e-6 means 0.000001
             feedMotor.setPower(feedPower);
         }
     }

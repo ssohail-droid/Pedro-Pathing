@@ -5,7 +5,9 @@ import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
 import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
 
 import java.util.List;
-
+// *** DO NOT USE THIS SUBSYSTEM IT ISN'T USED OR IS NOT FUNCTIONAL ***
+// *** DO NOT USE THIS SUBSYSTEM IT ISN'T USED OR IS NOT FUNCTIONAL ***
+// *** DO NOT USE THIS SUBSYSTEM IT ISN'T USED OR IS NOT FUNCTIONAL ***
 public class VisionSubsystem {
     private final VisionPortal visionPortal;
     private final AprilTagProcessor aprilTag;

@@ -2,31 +2,56 @@ package pedroPathing.SubSystem;
 
 import com.qualcomm.robotcore.hardware.Servo;
 
+/**
+ * ServoSubsystem - Controls Push and Hold servos for artifact shooting
+ *
+ * SERVO ROLES:
+ * - Push Servo: Pushes artifacts into the shooter mechanism
+ * - Hold Servo: Holds artifacts in position (backup/timeout recovery)
+ */
 public class ServoSubsystem {
     private final Servo pushServo;
-    private Servo pushServo2;
+    private Servo holdServo;
 
-    private double pushEngagedPos = 0.3;   // Servo 1 on (hold)
-    private double pushRetractedPos = 0.6; // Servo 1 off (hold)
-    private boolean pushActive = false;    // Tracks state for servo 1 (hold)
+    // Push Servo Positions
+    private double pushEngagedPos = 0.3;   // Push servo engaged (pushing artifact)
+    private double pushRetractedPos = 0.6; // Push servo retracted (ready position)
+    private boolean pushActive = false;    // Tracks push servo state
 
-    // ✅ New vars for servo 2
-    private double push2EngagedPos = 1.0; // Servo 2 on (push)
-    private double push2RetractedPos = 0.0; // Servo 2 off (push)
-    private boolean push2Active = false; // Tracks state for servo 2 (push)
+    // Hold Servo Positions
+    private double holdEngagedPos = 1.0;   // Hold servo engaged (holding artifact)
+    private double holdRetractedPos = 0.0; // Hold servo retracted (released)
+    private boolean holdActive = false;    // Tracks hold servo state
 
+    /**
+     * Constructor - Initialize with push servo
+     * @param pushServo The primary push servo
+     */
     public ServoSubsystem(Servo pushServo) {
         this.pushServo = pushServo;
-        retractPush(); // Initialize servo 1
+        retractPush(); // Initialize push servo to retracted position
     }
 
-    // ✅ Add a method to set second servo after init
-    public void setPushServo2(Servo pushServo2) {
-        this.pushServo2 = pushServo2;
-        retractPush2(); // Initialize second servo
+    // ═══════════════════════════════════════════════════════════════════════
+    // HOLD SERVO SETUP (call this in init after creating ServoSubsystem)
+    // ═══════════════════════════════════════════════════════════════════════
+
+    /**
+     * Set the hold servo (call this after construction)
+     * @param holdServo The secondary hold servo
+     */
+    public void setHoldServo(Servo holdServo) {
+        this.holdServo = holdServo;
+        retractHold(); // Initialize hold servo to retracted position
     }
 
-    // ======= Original Servo (pushServo) =======
+    // ═══════════════════════════════════════════════════════════════════════
+    // PUSH SERVO CONTROLS (Primary artifact pushing)
+    // ═══════════════════════════════════════════════════════════════════════
+
+    /**
+     * Toggle push servo between engaged and retracted
+     */
     public void togglePush() {
         pushActive = !pushActive;
         if (pushActive) {
@@ -36,54 +61,119 @@ public class ServoSubsystem {
         }
     }
 
+    /**
+     * Engage push servo (push artifact into shooter)
+     */
     public void engagePush() {
         pushActive = true;
         pushServo.setPosition(pushEngagedPos);
     }
 
+    /**
+     * Retract push servo (return to ready position)
+     */
     public void retractPush() {
         pushActive = false;
         pushServo.setPosition(pushRetractedPos);
     }
 
+    /**
+     * Check if push servo is currently active
+     * @return true if push servo is engaged
+     */
     public boolean isPushActive() {
         return pushActive;
     }
 
+    /**
+     * Set custom positions for push servo
+     * @param engaged Position when pushing (0.0-1.0)
+     * @param retracted Position when retracted (0.0-1.0)
+     */
     public void setPushPositions(double engaged, double retracted) {
         this.pushEngagedPos = engaged;
         this.pushRetractedPos = retracted;
     }
 
-    // ======= New Servo 2 (pushServo2) =======
-    public void togglePush2() {
-        if (pushServo2 == null) return; // safety
-        push2Active = !push2Active;
-        if (push2Active) {
-            pushServo2.setPosition(push2EngagedPos);
+    // ═══════════════════════════════════════════════════════════════════════
+    // HOLD SERVO CONTROLS (Backup/timeout recovery)
+    // ═══════════════════════════════════════════════════════════════════════
+
+    /**
+     * Toggle hold servo between engaged and retracted
+     */
+    public void toggleHold() {
+        if (holdServo == null) return; // Safety check
+        holdActive = !holdActive;
+        if (holdActive) {
+            holdServo.setPosition(holdEngagedPos);
         } else {
-            pushServo2.setPosition(push2RetractedPos);
+            holdServo.setPosition(holdRetractedPos);
         }
     }
 
-    public void engagePush2() {
-        if (pushServo2 == null) return;
-        push2Active = true;
-        pushServo2.setPosition(push2EngagedPos);
+    /**
+     * Engage hold servo (hold artifact in position)
+     */
+    public void engageHold() {
+        if (holdServo == null) return; // Safety check
+        holdActive = true;
+        holdServo.setPosition(holdEngagedPos);
     }
 
-    public void retractPush2() {
-        if (pushServo2 == null) return;
-        push2Active = false;
-        pushServo2.setPosition(push2RetractedPos);
+    /**
+     * Retract hold servo (release artifact)
+     */
+    public void retractHold() {
+        if (holdServo == null) return; // Safety check
+        holdActive = false;
+        holdServo.setPosition(holdRetractedPos);
     }
 
-    public boolean isPush2Active() {
-        return push2Active;
+    /**
+     * Check if hold servo is currently active
+     * @return true if hold servo is engaged
+     */
+    public boolean isHoldActive() {
+        return holdActive;
     }
 
-    public void setPush2Positions(double engaged, double retracted) {
-        this.push2EngagedPos = engaged;
-        this.push2RetractedPos = retracted;
+    /**
+     * Set custom positions for hold servo
+     * @param engaged Position when holding (0.0-1.0)
+     * @param retracted Position when released (0.0-1.0)
+     */
+    public void setHoldPositions(double engaged, double retracted) {
+        this.holdEngagedPos = engaged;
+        this.holdRetractedPos = retracted;
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // UTILITY METHODS
+    // ═══════════════════════════════════════════════════════════════════════
+
+    /**
+     * Get current push servo position
+     * @return Current position (0.0-1.0)
+     */
+    public double getPushPosition() {
+        return pushServo.getPosition();
+    }
+
+    /**
+     * Get current hold servo position
+     * @return Current position (0.0-1.0), or -1 if hold servo not set
+     */
+    public double getHoldPosition() {
+        if (holdServo == null) return -1;
+        return holdServo.getPosition();
+    }
+
+    /**
+     * Emergency stop - retract both servos
+     */
+    public void emergencyStop() {
+        retractPush();
+        retractHold();
     }
 }

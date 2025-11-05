@@ -17,8 +17,8 @@ public class IntakeSubsystem {
     public void setPower(double power) {
         this.intakePower = Math.max(-1.0, Math.min(1.0, power));
         // If running, update to new power
-        if (Math.abs(intakeMotor.getPower()) > 1e-6) {
-            intakeMotor.setPower(-intakePower); // negative to match your original flow
+        if (Math.abs(intakeMotor.getPower()) > 1e-6) { //1e-6 means 0.000001
+            intakeMotor.setPower(-intakePower);
         }
     }
 
@@ -35,6 +35,6 @@ public class IntakeSubsystem {
     }
 
     public boolean isRunning() {
-        return Math.abs(intakeMotor.getPower()) > 1e-6;
+        return Math.abs(intakeMotor.getPower()) > 1e-6; //
     }
 }
