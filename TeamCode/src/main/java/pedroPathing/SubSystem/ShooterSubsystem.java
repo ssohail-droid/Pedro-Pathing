@@ -1,4 +1,3 @@
-// *** Package and Imports ***
 package pedroPathing.SubSystem;
 
 import com.acmerobotics.dashboard.FtcDashboard;
@@ -15,12 +14,12 @@ import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 public class ShooterSubsystem {
 
     // *** Dashboard Tunable Parameters ***
-    public static double targetRPM = 2500; // Desired rotations per minute
+    public static double targetRPM = 2650; // Desired rotations per minute
 
-    public static double kP = 22.0; // Proportional gain
-    public static double kI = 0.0; // Integral gain
+    public static double kP = 12.0; // Proportional gain
+    public static double kI = 0.05; // Integral gain
     public static double kD = 8.0; // Derivative gain
-    public static double kF = 11.5; // Feedforward gain
+    public static double kF = 14.6; // Feedforward gain
 
     private static final double TICKS_PER_REV = 28.0; // Motor encoder constant
 

@@ -51,11 +51,11 @@ public class BlueAUTO_2025 extends OpMode {
     private long stepStartTime = 0;
 
     private final Pose startPose         = new Pose(22, 122.5, Math.toRadians((143 + 180) % 360));
-    private final Pose shootPose         = new Pose(52, 102.5, Math.toRadians((143 + 180) % 360));
+    private final Pose shootPose         = new Pose(52, 102.5, Math.toRadians((147 + 180) % 360));
     private final Pose preIntakePose     = new Pose(52, 84,   Math.toRadians((0 + 180) % 360));
     private final Pose intakeMovePose    = new Pose(25, 84,   Math.toRadians((0 + 180) % 360));
     private final Pose intakeReturnPose  = new Pose(52, 84,   Math.toRadians((0 + 180) % 360));
-    private final Pose intakeToShootPose = new Pose(52, 102.5,Math.toRadians((143 + 180) % 360));
+    private final Pose intakeToShootPose = new Pose(52, 102.5,Math.toRadians((147 + 180) % 360));
 
     private PathChain toShootFromStart, toPreIntake, intakeOnMove, intakeOffReturn, toShootReturn;
 
@@ -165,6 +165,7 @@ public class BlueAUTO_2025 extends OpMode {
                 if (!follower.isBusy()) {
                     intake.start();
                     transfer.start();
+                    servos.retractHold();
                     follower.followPath(intakeOnMove);
                     setPathState(3);
                 }
@@ -173,6 +174,7 @@ public class BlueAUTO_2025 extends OpMode {
             case 3:
                 if (!follower.isBusy()) {
                     follower.followPath(intakeOffReturn);
+                    servos.retractHold();
                     setPathState(4);
                 }
                 break;
@@ -202,55 +204,79 @@ public class BlueAUTO_2025 extends OpMode {
 
         switch (shotStep) {
             case 0:
-                // Step 0: engage hold (keep artifact secure)
+                // Step 0: Start shooter, engage hold (keep artifact secure), wait for RPM
                 servos.engageHold();
-                intake.start();
-                transfer.start();
+                intake.stop();
+                transfer.stop();
                 rpmDipped = false;
                 stepStartTime = now;
                 shotStep = 1;
                 break;
 
             case 1:
-                // Retract (open) hold when shooter is up to speed
-                if (currentRPM >= ShooterSubsystem.targetRPM * 0.97 && !rpmDipped) {
-                    servos.retractHold(); // ✅ open gate to release when ready
-                }
-
-                // Detect RPM dip = shot fired
-                if (currentRPM < ShooterSubsystem.targetRPM * 0.90) {
-                    rpmDipped = true;
-                    intake.stop();
-                    transfer.stop();
-                    servos.engageHold(); // ✅ close again after firing
-                    stepStartTime = now;
-                    shotStep = 4;
-                } else if (now - stepStartTime > 5000) {
-                    // Fallback push
-                    servos.engagePush();
+                // Step 1: Wait for shooter to reach target RPM
+                if (currentRPM >= ShooterSubsystem.targetRPM * 0.95) {
                     stepStartTime = now;
                     shotStep = 2;
                 }
                 break;
 
             case 2:
+                // Step 2: Wait 1 second after reaching RPM
                 if (now - stepStartTime >= 1000) {
-                    servos.retractPush();
-                    servos.engageHold();
-                    intake.stop();
-                    transfer.stop();
+                    servos.engageHold(); // Open hold servo
+                    stepStartTime = now;
+                    shotStep = 3;
+                }
+                break;
+
+            case 3:
+                // Step 3: Wait 0.5 seconds, then turn on intake
+                if (now - stepStartTime >= 500) {
+                    intake.start();
+                    transfer.start();
                     stepStartTime = now;
                     shotStep = 4;
                 }
                 break;
 
             case 4:
+                // Step 4: Wait for RPM dip (shot fired) or 5-second timeout
+                if (currentRPM < ShooterSubsystem.targetRPM * 0.90) {
+                    // RPM dipped - shot fired!
+                    servos.retractHold(); // Close hold servo immediately
+                    intake.stop();
+                    transfer.stop();
+                    stepStartTime = now;
+                    shotStep = 6; // Go to cooldown
+                } else if (now - stepStartTime > 5000) {
+                    // Timeout - use push servo as fallback
+                    servos.engagePush();
+                    stepStartTime = now;
+                    shotStep = 5;
+                }
+                break;
+
+            case 5:
+                // Step 5: Push servo fallback (hold for 1 second)
+                if (now - stepStartTime >= 1000) {
+                    intake.stop();
+                    transfer.stop();
+                    servos.retractPush();
+                    servos.engageHold();
+                    stepStartTime = now;
+                    shotStep = 6;
+                }
+                break;
+
+            case 6:
+                // Step 6: Cooldown period (0.5s) before next shot
                 if (now - stepStartTime >= 500) {
                     currentShot++;
                     if (currentShot < totalShots) {
-                        shotStep = 0;
+                        shotStep = 0; // Next shot
                     } else {
-                        return true;
+                        return true; // All shots complete
                     }
                 }
                 break;
