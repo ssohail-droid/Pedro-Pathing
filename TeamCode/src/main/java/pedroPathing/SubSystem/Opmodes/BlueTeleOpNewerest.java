@@ -45,8 +45,8 @@ public class BlueTeleOpNewerest extends OpMode {
 
     public static double RPM_PER_INCH = 5.0;
     public static double BASE_SHOOTING_DISTANCE = 24.0;
-    public static double MIN_SHOOTING_RPM = 2650;
-    public static double MAX_SHOOTING_RPM = 2650.0;
+    public static double MIN_SHOOTING_RPM = 2400;
+    public static double MAX_SHOOTING_RPM = 2400;
 
     public static double AUTO_AIM_ROTATION_GAIN = 0.03;
     public static double AUTO_AIM_STRAFE_GAIN = 0.02;
@@ -60,7 +60,7 @@ public class BlueTeleOpNewerest extends OpMode {
 
     public static boolean ENABLE_ADAPTIVE_RPM = true;
     public static double RPM_VOLTAGE_COEFFICIENT = 15.0;
-    public static double BASE_RPM = 2650;
+    public static double BASE_RPM = 2400;
 
     public static boolean ENABLE_BATTERY_COMPENSATION = true;
     public static double MIN_VOLTAGE_THRESHOLD = 11.5;

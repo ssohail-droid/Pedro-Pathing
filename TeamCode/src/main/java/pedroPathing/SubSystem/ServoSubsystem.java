@@ -19,8 +19,8 @@ public class ServoSubsystem {
     private boolean pushActive = false;    // Tracks push servo state
 
     // Hold Servo Positions
-    private double holdEngagedPos = 0.3;   // Hold servo engaged (holding artifact)
-    private double holdRetractedPos = 0.6; // Hold servo retracted (released)
+    private double holdEngagedPos = 0.6;   // Hold servo engaged (holding artifact)
+    private double holdRetractedPos = 0.3; // Hold servo retracted (released)
     private boolean holdActive = false;    // Tracks hold servo state
 
     /**

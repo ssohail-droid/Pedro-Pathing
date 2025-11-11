@@ -14,7 +14,7 @@ import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 public class ShooterSubsystem {
 
     // *** Dashboard Tunable Parameters ***
-    public static double targetRPM = 2650; // Desired rotations per minute
+    public static double targetRPM = 2850; // Desired rotations per minute
 
     public static double kP = 12.0; // Proportional gain
     public static double kI = 0.05; // Integral gain

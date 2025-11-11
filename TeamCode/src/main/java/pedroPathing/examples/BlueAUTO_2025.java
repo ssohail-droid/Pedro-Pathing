@@ -29,7 +29,7 @@ public class BlueAUTO_2025 extends OpMode {
 
     public static double adaptiveMaxPower = 0.5;
     public static int totalPreloadShots = 3;
-    public static int totalCycleShots = 2;
+    public static int totalCycleShots = 3;
 
     private Follower follower;
     private Timer pathTimer;
@@ -50,12 +50,12 @@ public class BlueAUTO_2025 extends OpMode {
     private boolean rpmDipped = false;
     private long stepStartTime = 0;
 
-    private final Pose startPose         = new Pose(22, 122.5, Math.toRadians((143 + 180) % 360));
-    private final Pose shootPose         = new Pose(52, 102.5, Math.toRadians((147 + 180) % 360));
+    private final Pose startPose         = new Pose(22, 122.5, Math.toRadians((143 + 180) % 360)); //no cange
+    private final Pose shootPose         = new Pose(37, 117.5, Math.toRadians((149 + 180) % 360));
     private final Pose preIntakePose     = new Pose(52, 84,   Math.toRadians((0 + 180) % 360));
     private final Pose intakeMovePose    = new Pose(25, 84,   Math.toRadians((0 + 180) % 360));
     private final Pose intakeReturnPose  = new Pose(52, 84,   Math.toRadians((0 + 180) % 360));
-    private final Pose intakeToShootPose = new Pose(52, 102.5,Math.toRadians((147 + 180) % 360));
+    private final Pose intakeToShootPose = new Pose(37, 117.5,Math.toRadians((149 + 180) % 360));
 
     private PathChain toShootFromStart, toPreIntake, intakeOnMove, intakeOffReturn, toShootReturn;
 
