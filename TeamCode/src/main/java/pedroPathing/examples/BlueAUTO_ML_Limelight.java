@@ -1185,7 +1185,7 @@ public class BlueAUTO_ML_Limelight extends OpMode {
  *
  * To find nearest purple artifact:
  *   Pose purpleArtifact = findNearestArtifact("purple");
- *
+ * ello me llamo steve
  * ═══════════════════════════════════════════════════════════════════════════
  * FIELD COORDINATES (DECODE 2025-2026)
  * ═══════════════════════════════════════════════════════════════════════════

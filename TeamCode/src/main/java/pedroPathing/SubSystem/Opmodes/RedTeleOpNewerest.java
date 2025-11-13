@@ -29,8 +29,8 @@ import pedroPathing.constants.LConstants;
 import java.util.List;
 
 @Config
-@TeleOp(name = "BLUE TeleOp (Limelight + ML)", group = "Competition")
-public class BlueTeleOpNewerest extends OpMode {
+@TeleOp(name = "Red TeleOp (Limelight + ML)", group = "Competition")
+public class RedTeleOpNewerest extends OpMode {
 
     public static boolean ENABLE_LIMELIGHT = true;
     public static boolean ENABLE_DISTANCE_SHOOTING = true;
@@ -65,8 +65,8 @@ public class BlueTeleOpNewerest extends OpMode {
     public static boolean ENABLE_BATTERY_COMPENSATION = true;
     public static double MIN_VOLTAGE_THRESHOLD = 11.5;
 
-    private final Pose startPose = new Pose(60.5, 100, Math.toRadians(143));
-    private final Pose blueTarget = new Pose(60.5, 100, Math.toRadians(143));
+    private final Pose startPose = new Pose(113, 125,Math.toRadians((6 + 180) % 360));
+    private final Pose blueTarget = new Pose(113, 125,Math.toRadians((6 + 180) % 360));
 
     private static final double POSITION_TOLERANCE = 0.1;
     private static final double HEADING_TOLERANCE = 0.1;
@@ -399,13 +399,13 @@ public class BlueTeleOpNewerest extends OpMode {
         boolean shooterReady = shooterRPM >= targetRPM * 0.95;
 
         if (shooterReady && !holdEngaged)
-            blinkin.setPattern(RevBlinkinLedDriver.BlinkinPattern.STROBE_BLUE);
-        else if (shooterReady && holdEngaged)
             blinkin.setPattern(RevBlinkinLedDriver.BlinkinPattern.STROBE_RED);
+        else if (shooterReady && holdEngaged)
+            blinkin.setPattern(RevBlinkinLedDriver.BlinkinPattern.STROBE_BLUE);
         else if (holdEngaged)
-            blinkin.setPattern(RevBlinkinLedDriver.BlinkinPattern.RED);
-        else
             blinkin.setPattern(RevBlinkinLedDriver.BlinkinPattern.BLUE);
+        else
+            blinkin.setPattern(RevBlinkinLedDriver.BlinkinPattern.RED);
     }
 
     private void startNavigation(Pose target) {
