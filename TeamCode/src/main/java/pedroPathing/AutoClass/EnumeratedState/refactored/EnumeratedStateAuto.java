@@ -4,10 +4,12 @@ import com.pedropathing.follower.Follower;
 import com.pedropathing.util.Constants;
 import com.pedropathing.util.Timer;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 
 import pedroPathing.constants.FConstants;
 import pedroPathing.constants.LConstants;
+
 
 @Autonomous(name = "EnumeratedStateAuto(V3.0)", group = "Examples")
 public class EnumeratedStateAuto extends OpMode {

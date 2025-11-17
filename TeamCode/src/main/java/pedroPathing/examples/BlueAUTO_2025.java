@@ -249,7 +249,7 @@ public class BlueAUTO_2025 extends OpMode {
                     transfer.stop();
                     stepStartTime = now;
                     shotStep = 6; // Go to cooldown
-                } else if (now - stepStartTime > 5000) {
+                } else if (now - stepStartTime > 3000) {
                     // Timeout - use push servo as fallback
                     servos.engagePush();
                     stepStartTime = now;
