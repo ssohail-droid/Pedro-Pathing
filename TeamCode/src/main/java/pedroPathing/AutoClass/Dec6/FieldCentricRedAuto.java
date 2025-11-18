@@ -1,86 +1,139 @@
- package pedroPathing.AutoClass.Dec6;
+package pedroPathing.AutoClass.Dec6;
 
- import com.pedropathing.follower.Follower;
- import com.pedropathing.localization.Pose;
- import com.pedropathing.util.Constants;
- import com.qualcomm.robotcore.eventloop.opmode.Disabled;
- import com.qualcomm.robotcore.eventloop.opmode.OpMode;
- import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.pedropathing.follower.Follower;
+import com.pedropathing.localization.Pose;
+import com.pedropathing.pathgen.BezierLine;
+import com.pedropathing.pathgen.Point;
+import com.pedropathing.util.Constants;
+import com.qualcomm.robotcore.eventloop.opmode.OpMode;
+import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
- import pedroPathing.constants.FConstants;
- import pedroPathing.constants.LConstants;
+import pedroPathing.constants.FConstants;
+import pedroPathing.constants.LConstants;
 
- /**
-  * This is an example teleop that showcases movement and field-centric driving.
-  *
-  * @author Baron Henderson - 20077 The Indubitables
-  * @version 2.0, 12/30/2024
-  */
+@TeleOp(name = "FieldCentricRedAuto", group = "Examples")
+public class FieldCentricRedAuto extends OpMode {
 
+    private Follower follower;
+    private final Pose startPose = new Pose(39, 128, Math.toRadians(270));
+    private final Pose targetPose = new Pose(22, 122, Math.toRadians(311));
 
- @TeleOp(name = " FieldCentricRedAuto", group = "Examples")
- public class FieldCentricRedAuto extends OpMode {
-     private Follower follower;
-     private final Pose startPose = new Pose(0,0,0);
+    // Control flags
+    private boolean aPressed = false;
+    private boolean bPressed = false;
+    private boolean navigating = false;
+    private boolean arrived = false;
 
+    // Tolerances
+    private static final double POSITION_TOLERANCE = 2.0;    // inches
+    private static final double HEADING_TOLERANCE = Math.toRadians(5); // radians
 
+    @Override
+    public void init() {
+        Constants.setConstants(FConstants.class, LConstants.class);
+        follower = new Follower(hardwareMap);
+        follower.setStartingPose(startPose);
 
+        telemetry.addLine("Initialized. Press A to auto-drive.");
+        telemetry.update();
+    }
 
+    @Override
+    public void start() {
+        follower.startTeleopDrive();  // Start in manual control
+    }
 
-     /** This method is call once when init is played, it initializes the follower **/
-     @Override
-     public void init() {
-         Constants.setConstants(FConstants.class, LConstants.class);
-         follower = new Follower(hardwareMap);
-         follower.setStartingPose(startPose);
+    @Override
+    public void loop() {
+        // === A to start auto navigation ===
+        if (gamepad1.a && !aPressed && !navigating) {
+            aPressed = true;
+            startAutoNavigation();
+        } else if (!gamepad1.a) {
+            aPressed = false;
+        }
 
-         Constants.setConstants(FConstants.class, LConstants.class);
+        // === B to cancel auto navigation ===
+        if (gamepad1.b && !bPressed && navigating) {
+            bPressed = true;
+            cancelAutoNavigation();
+        } else if (!gamepad1.b) {
+            bPressed = false;
+        }
 
-         follower = new Follower(hardwareMap);
-         follower.setStartingPose(startPose);
+        // === Navigation logic ===
+        if (navigating && !arrived) {
+            follower.update();
 
+            if (hasArrivedAtTarget()) {
+                navigating = false;
+                arrived = true;
 
-     }
+                follower.breakFollowing();
+                follower.setPose(targetPose);
+                follower.startTeleopDrive();
+            }
+        }
 
-     /** This method is called continuously after Init while waiting to be started. **/
-     @Override
-     public void init_loop() {
-     }
+        // === Manual drive (always active if not navigating) ===
+        if (!navigating) {
+            follower.setTeleOpMovementVectors(
+                    gamepad1.left_stick_x,
+                    -gamepad1.left_stick_y,
+                    -gamepad1.right_stick_x,
+                    false
+            );
+            follower.update();
+        }
 
-     /** This method is called once at the start of the OpMode. **/
-     @Override
-     public void start() {
-         follower.startTeleopDrive();
-     }
+        // === Telemetry ===
+        telemetry.addLine(navigating ? "Navigating to Target..." :
+                (arrived ? "Arrived — Manual Drive Active" : "Manual Drive Mode"));
+        telemetry.addData("X", "%.2f", follower.getPose().getX());
+        telemetry.addData("Y", "%.2f", follower.getPose().getY());
+        telemetry.addData("Heading", "%.1f°", Math.toDegrees(follower.getPose().getHeading()));
+        telemetry.update();
+    }
 
-     /** This is the main loop of the opmode and runs continuously after play **/
-     @Override
-     public void loop() {
+    private void startAutoNavigation() {
+        navigating = true;
+        arrived = false;
 
+        follower.followPath(
+                follower.pathBuilder()
+                        .addPath(new BezierLine(
+                                new Point(follower.getPose()),
+                                new Point(targetPose)
+                        ))
+                        .setLinearHeadingInterpolation(follower.getPose().getHeading(), targetPose.getHeading())
+                        .build()
+        );
+    }
 
+    private void cancelAutoNavigation() {
+        navigating = false;
+        arrived = false;
 
+        follower.breakFollowing();
+        follower.startTeleopDrive();
+    }
 
+    private boolean hasArrivedAtTarget() {
+        Pose current = follower.getPose();
 
+        double dx = targetPose.getX() - current.getX();
+        double dy = targetPose.getY() - current.getY();
+        double distanceError = Math.hypot(dx, dy);
 
-         follower.setTeleOpMovementVectors(gamepad1.left_stick_x, -gamepad1.left_stick_y, -gamepad1.right_stick_x, false);
-         follower.update();
+        double headingError = normalizeAngle(targetPose.getHeading() - current.getHeading());
 
+        return distanceError < POSITION_TOLERANCE &&
+                Math.abs(headingError) < HEADING_TOLERANCE;
+    }
 
-
-         /* Telemetry Outputs of our Follower */
-         telemetry.addData("X", follower.getPose().getX());
-         telemetry.addData("Y", follower.getPose().getY());
-         telemetry.addData("Heading in Degrees", Math.toDegrees(follower.getPose().getHeading()));
-
- 
- 
-         /* Update Telemetry to the Driver Hub */
-         telemetry.update();
- 
-     }
- 
-     /** We do not use this because everything automatically should disable **/
-     @Override
-     public void stop() {
-     }
- }
+    private double normalizeAngle(double angle) {
+        while (angle > Math.PI) angle -= 2 * Math.PI;
+        while (angle < -Math.PI) angle += 2 * Math.PI;
+        return angle;
+    }
+}
