@@ -29,8 +29,8 @@ import pedroPathing.constants.FConstants;
 import pedroPathing.constants.LConstants;
 
 @Config
-@TeleOp(name = "FieldCentricAutoAlign", group = "Examples")
-public class FieldCentricAutoAlign extends OpMode {
+//@TeleOp(name = "FieldCentricAutoAlign", group = "Examples")
+public class FieldCentricAuteoAlign extends OpMode {
 
     private Follower follower;
     private final Pose startPose = new Pose(39, 128, Math.toRadians(270));
@@ -59,7 +59,7 @@ public class FieldCentricAutoAlign extends OpMode {
     private ElapsedTime servoToggleTimer = new ElapsedTime();
 
     public static double TARGET_FRONT_DIST = 4;
-    public static double TARGET_RIGHT_DIST = 16;
+    public static double TARGET_RIGHT_DIST = 14;
     public static double ALIGN_TOLERANCE = 1.0;
     public static double ALIGN_SPEED = 0.1;
 
@@ -104,6 +104,7 @@ public class FieldCentricAutoAlign extends OpMode {
 
     @Override
     public void loop() {
+
         // === Gamepad 1: Start auto-align ===
         if (gamepad1.x && !xPressed && !navigating && !aligning) {
             xPressed = true;
@@ -112,22 +113,25 @@ public class FieldCentricAutoAlign extends OpMode {
             xPressed = false;
         }
 
-        // === Gamepad 1: Cancel auto-nav with bumper ===
-        if ((gamepad1.left_bumper || gamepad1.right_bumper) && navigating) {
+        // === Gamepad 1: Cancel BOTH navigation + alignment ===
+        if ((gamepad1.left_bumper || gamepad1.right_bumper) && (navigating || aligning)) {
             navigating = false;
             aligning = false;
             arrived = false;
             follower.breakFollowing();
             follower.startTeleopDrive();
-            telemetry.addLine("✋ Navigation canceled manually.");
+            gamepad1.rumble(300);
+            telemetry.addLine("Navigation/alignment canceled manually.");
         }
 
         // === AUTO NAVIGATION ===
         if (navigating && !arrived) {
             follower.update();
+
             if (hasArrivedAtTarget()) {
                 navigating = false;
                 arrived = true;
+
                 follower.breakFollowing();
                 follower.setPose(targetPose);
                 follower.startTeleopDrive();
