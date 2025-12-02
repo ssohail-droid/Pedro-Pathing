@@ -29,14 +29,13 @@ import pedroPathing.constants.FConstants;
 import pedroPathing.constants.LConstants;
 
 @Config
-@TeleOp(name = "FieldCentricBlueAutoTEST", group = "Examples")
-public class FieldCentricBlueAutoTEST extends OpMode {
+@TeleOp(name = "FieldCentricRedAuto", group = "Examples")
+public class TeleRed extends OpMode {
 
     private Follower follower;
-    private final Pose startPose = new Pose(40, 16, Math.toRadians(90));
-    private final Pose targetPose = new Pose(24, 24, Math.toRadians(50));
+    private final Pose startPose = new Pose(39, 128, Math.toRadians(270));
+    private final Pose targetPose = new Pose(22, 122, Math.toRadians(311));
 
-    // Hardware Mapped for Auto-Alignment
     private DistanceSensor frontSensor;
     private DistanceSensor rightSensor;
 
@@ -45,9 +44,6 @@ public class FieldCentricBlueAutoTEST extends OpMode {
     private TransferSubsystem transfer;
     private ServoSubsystem servos;
     private RevBlinkinLedDriver blinkin;
-
-    DistanceSensor dist;
-    Servo servo;
 
     private boolean xPressed = false;
     private boolean navigating = false;
@@ -62,19 +58,14 @@ public class FieldCentricBlueAutoTEST extends OpMode {
     private double manualRPMAdjustment = 0;
     private ElapsedTime servoToggleTimer = new ElapsedTime();
 
-    public static double TARGET_FRONT_DIST = 4;
-    public static double TARGET_RIGHT_DIST = 14;
+    public static double TARGET_FRONT_DIST = 3;
+    public static double TARGET_RIGHT_DIST = 23;
     public static double ALIGN_TOLERANCE = 1.0;
     public static double ALIGN_SPEED = 0.1;
 
     public static double POSITION_TOLERANCE = 2.0;
     public static double HEADING_TOLERANCE_DEG = 5;
     public static long ALIGN_TIMEOUT_MS = 1700;
-
-    // --- NEW DISTANCE TRIGGER CONFIG ---
-    // The servo will engage when the front sensor detects an object at or below this threshold
-    public static double HOLD_TRIGGER_DIST_CM = 5.0; // 5 cm threshold
-    // -----------------------------------
 
     private long alignStartTime;
 
@@ -86,9 +77,8 @@ public class FieldCentricBlueAutoTEST extends OpMode {
         follower = new Follower(hardwareMap);
         follower.setStartingPose(startPose);
 
-        // Distance Sensors for Alignment
         frontSensor = hardwareMap.get(DistanceSensor.class, "front_distance");
-        rightSensor = hardwareMap.get(DistanceSensor.class, "left_distance");
+        rightSensor = hardwareMap.get(DistanceSensor.class, "right_distance");
 
         DcMotor intakeMotor = hardwareMap.get(DcMotor.class, "intake_motor");
         DcMotor feedMotor = hardwareMap.get(DcMotor.class, "feed_motor");
@@ -104,13 +94,6 @@ public class FieldCentricBlueAutoTEST extends OpMode {
         blinkin = hardwareMap.get(RevBlinkinLedDriver.class, "blinkin");
 
         telemetry.addLine("Initialized. Press X to auto-align.");
-
-        dist = hardwareMap.get(DistanceSensor.class, "shootDe");
-        servo = hardwareMap.get(Servo.class, "hold_servo");
-
-        servo.setPosition(0.3); // Set servo to an 'open' position
-        telemetry.addData("Status", "READY. Check names: dist_sensor, my_servo");
-
         telemetry.update();
     }
 
@@ -121,22 +104,6 @@ public class FieldCentricBlueAutoTEST extends OpMode {
 
     @Override
     public void loop() {
-
-        double currentDistanceCM = dist.getDistance(DistanceUnit.CM);
-
-        if (currentDistanceCM < 5.0) {
-            // Under 5 cm: Set servo to 'closed'
-            servo.setPosition(0.3);
-            telemetry.addData("ACTION", "CLOSING");
-        } else {
-            // 5 cm or more: Set servo to 'open'
-            servo.setPosition(0.6);
-            telemetry.addData("ACTION", "OPEN");
-        }
-
-        // Display distance
-        telemetry.addData("Distance", "%.1f cm", currentDistanceCM);
-        telemetry.update();
 
         // === Gamepad 1: Start auto-align ===
         if (gamepad1.x && !xPressed && !navigating && !aligning) {
@@ -212,8 +179,8 @@ public class FieldCentricBlueAutoTEST extends OpMode {
         // === DEFAULT DRIVE ===
         if (!navigating && !aligning) {
             follower.setTeleOpMovementVectors(
-                    -gamepad1.left_stick_x,
-                    gamepad1.left_stick_y,
+                    gamepad1.left_stick_x,
+                    -gamepad1.left_stick_y,
                     -gamepad1.right_stick_x,
                     false
             );
@@ -237,8 +204,6 @@ public class FieldCentricBlueAutoTEST extends OpMode {
         telemetry.addLine("=== Sensors ===");
         telemetry.addData("Front (in)", "%.2f", frontSensor.getDistance(DistanceUnit.INCH));
         telemetry.addData("Right (in)", "%.2f", rightSensor.getDistance(DistanceUnit.INCH));
-        // Add distance telemetry in CM for the new trigger logic
-        telemetry.addData("Front (cm)", "%.2f", frontSensor.getDistance(DistanceUnit.CM));
 
         telemetry.addLine("=== Alignment ===");
         telemetry.addData("Aligning", aligning);
@@ -249,29 +214,6 @@ public class FieldCentricBlueAutoTEST extends OpMode {
     }
 
     private void handleGamepad2Controls() {
-
-        // --------------------------------------------------------------------------------
-        // NEW DISTANCE-TRIGGERED HOLD SERVO LOGIC
-        // This overrides the manual Y-button control when an object is detected.
-        // --------------------------------------------------------------------------------
-
-        // Read distance from the front sensor in CM
-        double currentFrontDistCM = frontSensor.getDistance(DistanceUnit.CM);
-        boolean distanceTriggered = false;
-
-        if (currentFrontDistCM < HOLD_TRIGGER_DIST_CM) {
-            // Distance is below threshold (e.g., 5 cm): Automatically engage the hold servo
-            servos.engageHold();
-            holdToggle = true; // Sync the state variable
-            distanceTriggered = true;
-            telemetry.addData("Auto Hold", "ACTIVE (%.1f cm)", currentFrontDistCM);
-        } else {
-            telemetry.addData("Auto Hold", "IDLE");
-        }
-
-        // --------------------------------------------------------------------------------
-        // INTAKE/FEEDER CONTROL (A Button)
-        // --------------------------------------------------------------------------------
         if (gamepad2.a && !intakeFeedPressed) {
             intakeFeedToggle = !intakeFeedToggle;
             intakeFeedPressed = true;
@@ -285,29 +227,6 @@ public class FieldCentricBlueAutoTEST extends OpMode {
         } else if (!gamepad2.a) {
             intakeFeedPressed = false;
         }
-
-        // --------------------------------------------------------------------------------
-        // MANUAL HOLD SERVO CONTROL (Y Button)
-        // Only allow manual control if the distance sensor hasn't already engaged the hold servo.
-        // --------------------------------------------------------------------------------
-        if (!distanceTriggered) {
-            if (gamepad2.y && !yPressed && servoToggleTimer.seconds() > 0.2) {
-                holdToggle = !holdToggle;
-                yPressed = true;
-                servoToggleTimer.reset();
-                if (holdToggle) servos.engageHold();
-                else servos.retractHold();
-            } else if (!gamepad2.y) {
-                yPressed = false;
-            }
-        } else {
-            // If the sensor engaged it, the Y button press is ignored, but the release logic is reset
-            yPressed = false;
-        }
-
-        // --------------------------------------------------------------------------------
-        // OTHER GAMEPAD 2 CONTROLS
-        // --------------------------------------------------------------------------------
 
         if (gamepad2.right_trigger > 0.5 && !shooterPressed) {
             shooterToggle = !shooterToggle;
@@ -333,6 +252,16 @@ public class FieldCentricBlueAutoTEST extends OpMode {
         if (gamepad2.share) {
             intake.reverse();
             transfer.reverse();
+        }
+
+        if (gamepad2.y && !yPressed && servoToggleTimer.seconds() > 0.2) {
+            holdToggle = !holdToggle;
+            yPressed = true;
+            servoToggleTimer.reset();
+            if (holdToggle) servos.engageHold();
+            else servos.retractHold();
+        } else if (!gamepad2.y) {
+            yPressed = false;
         }
 
         if (gamepad2.x) servos.engagePush();
