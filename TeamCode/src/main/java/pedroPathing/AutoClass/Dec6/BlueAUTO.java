@@ -132,9 +132,7 @@ public class BlueAUTO extends OpMode {
         follower.setStartingPose(onePos);
         buildPaths();
 
-        // Initialize Alignment Sensors
-        frontSensor = hardwareMap.get(DistanceSensor.class, "front_distance");
-        // rightSensor = hardwareMap.get(DistanceSensor.class, "right_distance"); // Removed
+
 
         // Initialize subsystems
         DcMotor intakeMotor = hardwareMap.get(DcMotor.class, "intake_motor");
@@ -148,8 +146,7 @@ public class BlueAUTO extends OpMode {
         holdServo.setPosition(HOLD_GATE_CLOSED);
         pushServo2.setPosition(PUSHER_RETRACT);
 
-        shooter = new ShooterSubsystem(hardwareMap,
-                new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry()));
+        shooter = new ShooterSubsystem(hardwareMap, new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry()));
         intake = new IntakeSubsystem(intakeMotor);
         transfer = new TransferSubsystem(feedMotor);
     }
