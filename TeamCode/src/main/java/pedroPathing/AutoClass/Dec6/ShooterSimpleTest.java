@@ -61,7 +61,7 @@ public class ShooterSimpleTest extends OpMode {
         intakeMotor.setPower(1.0);
         transferMotor.setPower(1.0);
         state = "IDLE";
-        timer.reset();
+         timer.reset();
     }
 
     @Override
