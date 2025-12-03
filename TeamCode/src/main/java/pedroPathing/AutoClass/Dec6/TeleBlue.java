@@ -29,7 +29,7 @@ import pedroPathing.constants.FConstants;
 import pedroPathing.constants.LConstants;
 
 @Config
-@TeleOp(name = "FieldCentricBlueAuto", group = "Examples")
+@TeleOp(name = "TeleOpBlue", group = "Examples")
 public class TeleBlue extends OpMode {
 
     private Follower follower;

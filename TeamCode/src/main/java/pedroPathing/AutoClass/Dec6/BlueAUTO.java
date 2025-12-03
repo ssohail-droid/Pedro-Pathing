@@ -1,7 +1,5 @@
 package pedroPathing.AutoClass.Dec6;
 
-import com.acmerobotics.dashboard.FtcDashboard;
-import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.pedropathing.follower.Follower;
 import com.pedropathing.localization.Pose;
 import com.pedropathing.pathgen.BezierLine;
@@ -9,17 +7,16 @@ import com.pedropathing.pathgen.PathChain;
 import com.pedropathing.pathgen.Point;
 import com.pedropathing.util.Constants;
 import com.pedropathing.util.Timer;
+
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
-import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DistanceSensor; // Added for alignment
+import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.util.ElapsedTime;
 
-import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit; // Added for distance reading
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 
-import pedroPathing.SubSystem.IntakeSubsystem;
-import pedroPathing.SubSystem.ShooterSubsystem;
-import pedroPathing.SubSystem.TransferSubsystem;
 import pedroPathing.constants.FConstants;
 import pedroPathing.constants.LConstants;
 
@@ -28,46 +25,24 @@ public class BlueAUTO extends OpMode {
 
     private Follower follower;
     private Timer pathTimer, opmodeTimer;
-    private int pathState; // Path sequence: 0->1 (Shoot) -> 4 (Align) -> 2 -> 3 (End)
+    private int pathState;
 
-    private final int Heading = 0;
     private final Pose onePos = new Pose(16.5, 35, Math.toRadians(90));
     private final Pose twoPos = new Pose(20, 31, Math.toRadians(73.4));
+    private final Pose threePos = new Pose(66, 50, Math.toRadians(270));
+    private final Pose fourPos = new Pose(66, 27, Math.toRadians(270));
+    private final Pose fivePos = new Pose(90, 50, Math.toRadians(270));
+    private final Pose sixPos = new Pose(90, 27, Math.toRadians(270));
+    private final Pose sevenPos = new Pose(43, 18.5, Math.toRadians(90));
 
-    private PathChain moveOne;
-    private PathChain moveTwo;
+    private PathChain moveOne, moveTwo, moveThree, moveFour;
+    private PathChain moveFive, moveSix, moveSeven, moveEight;
 
-    private IntakeSubsystem intake;
-    private ShooterSubsystem shooter;
-    private TransferSubsystem transfer;
+    private DcMotorEx shooterMotor, transferMotor, intakeMotor;
+    private Servo gateServo, pusherServo;
+    private DistanceSensor beamSensor;
 
-    // --- Servo Fields (now defined directly in OpMode) ---
-    private Servo holdServo;  // hold_servo (gate)
-    private Servo pushServo2; // push_servo (pusher)
-
-    // --- Servo Positions (Placeholder values - adjust based on your hardware) ---
-    private static final double HOLD_GATE_CLOSED = 0.6; // Position to close the gate
-    private static final double HOLD_GATE_OPEN = 0.2;   // Position to open the gate
-    private static final double PUSHER_EXTEND = 0.9;    // Position to extend the pusher
-    private static final double PUSHER_RETRACT = 0.1;   // Position to retract the pusher
-
-    // --- Distance Sensors for Alignment ---
-    private DistanceSensor frontSensor;
-    // private DistanceSensor rightSensor; // Removed right sensor
-    private long alignStartTime; // To track alignment timeout
-
-
-
-
-    // --- Shooting State Machine Variables ---
-    private int shotStep = 0;
-    private int totalShots = 4;
-    private int currentShot = 0;
-    private boolean rpmDipped = false;
-    private double targetRPM = ShooterSubsystem.targetRPM;
-    private long stepStartTime = 0;
-
-    // ------------------------------------------------------------
+    private ShooterManager shooterManager;
 
     public void buildPaths() {
         moveOne = follower.pathBuilder()
@@ -76,31 +51,122 @@ public class BlueAUTO extends OpMode {
                 .build();
 
         moveTwo = follower.pathBuilder()
-                .addPath(new BezierLine(new Point(twoPos), new Point(onePos)))
-                .setLinearHeadingInterpolation(twoPos.getHeading(), onePos.getHeading())
+                .addPath(new BezierLine(new Point(twoPos), new Point(threePos)))
+                .setLinearHeadingInterpolation(twoPos.getHeading(), threePos.getHeading())
+                .build();
+
+        moveThree = follower.pathBuilder()
+                .addPath(new BezierLine(new Point(threePos), new Point(fourPos)))
+                .setLinearHeadingInterpolation(threePos.getHeading(), fourPos.getHeading())
+                .build();
+
+        moveFour = follower.pathBuilder()
+                .addPath(new BezierLine(new Point(fourPos), new Point(twoPos)))
+                .setLinearHeadingInterpolation(fourPos.getHeading(), twoPos.getHeading())
+                .build();
+
+        moveFive = follower.pathBuilder()
+                .addPath(new BezierLine(new Point(twoPos), new Point(fivePos)))
+                .setLinearHeadingInterpolation(twoPos.getHeading(), fivePos.getHeading())
+                .build();
+
+        moveSix = follower.pathBuilder()
+                .addPath(new BezierLine(new Point(fivePos), new Point(sixPos)))
+                .setLinearHeadingInterpolation(fivePos.getHeading(), sixPos.getHeading())
+                .build();
+
+        moveSeven = follower.pathBuilder()
+                .addPath(new BezierLine(new Point(sixPos), new Point(twoPos)))
+                .setLinearHeadingInterpolation(sixPos.getHeading(), twoPos.getHeading())
+                .build();
+
+        moveEight = follower.pathBuilder()
+                .addPath(new BezierLine(new Point(twoPos), new Point(sevenPos)))
+                .setLinearHeadingInterpolation(twoPos.getHeading(), sevenPos.getHeading())
                 .build();
     }
-
-    /**
-     * Executes the sensor-based auto-alignment routine using only the front sensor.
-     * Corrects only forward/backward movement (Y-axis).
-     */
-
 
     public void autonomousPathUpdate() {
         switch (pathState) {
             case 0:
-                // Initial move to shooting position
                 if (!follower.isBusy()) {
-                    follower.setMaxPower(1);
                     follower.followPath(moveOne);
-
                     setPathState(1);
                 }
                 break;
 
             case 1:
-                // End autonomous
+                shooterManager.startShooting();
+                setPathState(2);
+                break;
+
+            case 2:
+                shooterManager.update();
+                if (shooterManager.getState().equals("DONE")) {
+                    intakeMotor.setPower(1.0);
+                    follower.followPath(moveTwo);
+                    setPathState(3);
+                }
+                break;
+
+            case 3:
+                if (!follower.isBusy()) {
+                    follower.followPath(moveThree);
+                    setPathState(4);
+                }
+                break;
+
+            case 4:
+                if (!follower.isBusy()) {
+                    intakeMotor.setPower(0);
+                    follower.followPath(moveFour);
+                    setPathState(5);
+                }
+                break;
+
+            case 5:
+                shooterManager.startShooting();
+                setPathState(6);
+                break;
+
+            case 6:
+                shooterManager.update();
+                if (shooterManager.getState().equals("DONE")) {
+                    intakeMotor.setPower(1.0);
+                    follower.followPath(moveFive);
+                    setPathState(7);
+                }
+                break;
+
+            case 7:
+                if (!follower.isBusy()) {
+                    follower.followPath(moveSix);
+                    setPathState(8);
+                }
+                break;
+
+            case 8:
+                if (!follower.isBusy()) {
+                    intakeMotor.setPower(0);
+                    follower.followPath(moveSeven);
+                    setPathState(9);
+                }
+                break;
+
+            case 9:
+                shooterManager.startShooting();
+                setPathState(10);
+                break;
+
+            case 10:
+                shooterManager.update();
+                if (shooterManager.getState().equals("DONE")) {
+                    follower.followPath(moveEight);
+                    setPathState(11);
+                }
+                break;
+
+            case 11:
                 if (!follower.isBusy()) {
                     setPathState(-1);
                 }
@@ -111,20 +177,12 @@ public class BlueAUTO extends OpMode {
     public void setPathState(int pState) {
         pathState = pState;
         pathTimer.resetTimer();
-
-        // Specific setup for alignment state
-        if (pState == 4) {
-            follower.breakFollowing(); // Stop any current path following
-            follower.startTeleopDrive(); // Switch follower to manual/TeleOp drive mode
-            alignStartTime = System.currentTimeMillis(); // Start timeout timer
-        }
     }
 
     @Override
     public void init() {
         pathTimer = new Timer();
         opmodeTimer = new Timer();
-        opmodeTimer.resetTimer();
 
         Constants.setConstants(FConstants.class, LConstants.class);
 
@@ -132,23 +190,16 @@ public class BlueAUTO extends OpMode {
         follower.setStartingPose(onePos);
         buildPaths();
 
+        shooterMotor = hardwareMap.get(DcMotorEx.class, "shooter");
+        transferMotor = hardwareMap.get(DcMotorEx.class, "feed_motor");
+        intakeMotor = hardwareMap.get(DcMotorEx.class, "intake");
 
+        gateServo = hardwareMap.get(Servo.class, "hold_servo");
+        pusherServo = hardwareMap.get(Servo.class, "push_servo");
 
-        // Initialize subsystems
-        DcMotor intakeMotor = hardwareMap.get(DcMotor.class, "intake_motor");
-        DcMotor feedMotor = hardwareMap.get(DcMotor.class, "feed_motor");
+        beamSensor = hardwareMap.get(DistanceSensor.class, "shootDe");
 
-        // --- Servo Initialization (Directly in OpMode) ---
-        holdServo = hardwareMap.get(Servo.class, "hold_servo");   // hold gate
-        pushServo2 = hardwareMap.get(Servo.class, "push_servo");  // pusher
-
-        // Set initial positions (Gate closed, Pusher retracted)
-        holdServo.setPosition(HOLD_GATE_CLOSED);
-        pushServo2.setPosition(PUSHER_RETRACT);
-
-        shooter = new ShooterSubsystem(hardwareMap, new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry()));
-        intake = new IntakeSubsystem(intakeMotor);
-        transfer = new TransferSubsystem(feedMotor);
+        shooterManager = new ShooterManager();
     }
 
     @Override
@@ -160,35 +211,128 @@ public class BlueAUTO extends OpMode {
     @Override
     public void loop() {
         follower.update();
-        shooter.update(); // Always keep shooter updated
-
         autonomousPathUpdate();
 
         telemetry.addData("Path State", pathState);
-        telemetry.addData("Shot Step", shotStep);
-        telemetry.addData("Current Shot", currentShot);
-        telemetry.addData("Shooter RPM", "%.1f", shooter.getRPM());
-        telemetry.addData("x", follower.getPose().getX());
-        telemetry.addData("y", follower.getPose().getY());
-        telemetry.addData("heading", follower.getPose().getHeading());
-
-        // --- Alignment Telemetry ---
-        if (pathState == 4 || pathState == 1) {
-            telemetry.addLine("=== Alignment Sensors ===");
-            telemetry.addData("Aligning", pathState == 4);
-            telemetry.addData("Front (in)", "%.2f", frontSensor.getDistance(DistanceUnit.INCH));
-            // telemetry.addData("Right (in)", "%.2f", rightSensor.getDistance(DistanceUnit.INCH)); // Removed
-            if (pathState == 4) {
-                telemetry.addData("Time Elapsed (ms)", System.currentTimeMillis() - alignStartTime);
-            }
-        }
-
+        telemetry.addData("Shooter State", shooterManager.getState());
+        telemetry.addData("Shooter RPM", shooterManager.getShooterRPM());
         telemetry.update();
     }
 
     @Override
-    public void stop() {
-        intake.stop();
-        transfer.stop();
+    public void stop() {}
+
+    private class ShooterManager {
+        private String shooterState = "IDLE";
+        private ElapsedTime timer = new ElapsedTime();
+
+        private final double BEAM_THRESHOLD_CM = 7.0;
+        private final double GATE_OPEN = 0.3;
+        private final double GATE_CLOSED = 0.6;
+        private final double PUSHER_PUSH = 0.9;
+        private final double PUSHER_RETRACT = 0.3;
+        private final double TICKS_PER_REV = 28.0;
+        private final double targetRPM = 2450;
+        private final double targetTPS = (targetRPM * TICKS_PER_REV) / 60.0;
+
+        private final long RECOVERY_TIMEOUT_MS = 1000;
+        private final long PUSHER_DELAY_MS = 250;
+
+        private final double kP = 0.1;
+        private final double kI = 0.0003;
+        private final double kD = 0.003;
+        private final double kF = 0.000357;
+
+        public ShooterManager() {
+            shooterMotor.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
+            shooterMotor.setVelocityPIDFCoefficients(kP, kI, kD, kF);
+        }
+
+        public void startShooting() {
+            shooterMotor.setVelocity(targetTPS);
+            gateServo.setPosition(GATE_OPEN);
+            pusherServo.setPosition(PUSHER_RETRACT);
+            transferMotor.setPower(1.0);
+            intakeMotor.setPower(1.0);
+            shooterState = "IDLE";
+            timer.reset();
+        }
+
+        public void update() {
+            double beamDist = beamSensor.getDistance(DistanceUnit.CM);
+            boolean beamBroken = beamDist < BEAM_THRESHOLD_CM;
+
+            switch (shooterState) {
+                case "IDLE":
+                    if (beamBroken) {
+                        transferMotor.setPower(0);
+                        gateServo.setPosition(GATE_CLOSED);
+                        timer.reset();
+                        shooterState = "BEAM_BROKEN";
+                    }
+                    break;
+
+                case "BEAM_BROKEN":
+                    if (isShooterReady() || timer.milliseconds() > RECOVERY_TIMEOUT_MS) {
+                        gateServo.setPosition(GATE_OPEN);
+                        transferMotor.setPower(1.0);
+                        timer.reset();
+                        shooterState = "FEEDING_NEXT";
+                    }
+                    break;
+
+                case "FEEDING_NEXT":
+                    if (beamBroken) {
+                        transferMotor.setPower(0);
+                        gateServo.setPosition(GATE_CLOSED);
+                        timer.reset();
+                        shooterState = "RECOVERING";
+                    } else if (timer.milliseconds() > 1000) {
+                        transferMotor.setPower(0);
+                        shooterState = "FINAL_PUSH";
+                        timer.reset();
+                    }
+                    break;
+
+                case "RECOVERING":
+                    if (isShooterReady() || timer.milliseconds() > RECOVERY_TIMEOUT_MS) {
+                        gateServo.setPosition(GATE_OPEN);
+                        transferMotor.setPower(1.0);
+                        timer.reset();
+                        shooterState = "FINAL_PUSH";
+                    }
+                    break;
+
+                case "FINAL_PUSH":
+                    pusherServo.setPosition(PUSHER_PUSH);
+                    if (timer.milliseconds() > PUSHER_DELAY_MS) {
+                        pusherServo.setPosition(PUSHER_RETRACT);
+                        transferMotor.setPower(0);
+                        intakeMotor.setPower(0);
+                        shooterState = "DONE";
+                    }
+                    break;
+
+                case "DONE":
+                    shooterMotor.setVelocity(0);
+                    transferMotor.setPower(0);
+                    intakeMotor.setPower(0);
+                    break;
+            }
+        }
+
+        public boolean isShooterReady() {
+            double currentTPS = shooterMotor.getVelocity();
+            double currentRPM = (currentTPS * 60.0) / TICKS_PER_REV;
+            return Math.abs(currentRPM - targetRPM) < 100;
+        }
+
+        public double getShooterRPM() {
+            return (shooterMotor.getVelocity() * 60.0) / TICKS_PER_REV;
+        }
+
+        public String getState() {
+            return shooterState;
+        }
     }
 }

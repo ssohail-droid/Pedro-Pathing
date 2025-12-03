@@ -14,7 +14,7 @@ import pedroPathing.constants.FConstants;
 import pedroPathing.constants.LConstants;
 
 
-@Autonomous(name = "AutoTestOne()", group = "Examples")
+//@Autonomous(name = "AutoTestOne()", group = "Examples")
 public class AutoTestOne extends OpMode {
     private Follower follower;
     private Timer pathTimer, actionTimer, opmodeTimer;
