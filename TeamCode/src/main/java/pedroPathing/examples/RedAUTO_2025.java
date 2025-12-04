@@ -24,7 +24,7 @@ import pedroPathing.constants.FConstants;
 import pedroPathing.constants.LConstants;
 
 @Config
-@Autonomous(name = "RedAUTO 2025 DECODE", group = "SeasonAutos")
+//@Autonomous(name = "RedAUTO 2025 DECODE", group = "SeasonAutos")
 public class RedAUTO_2025 extends OpMode {
 
     public static double adaptiveMaxPower = 0.5;

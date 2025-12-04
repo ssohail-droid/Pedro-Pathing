@@ -11,7 +11,7 @@ import pedroPathing.constants.FConstants;
 import pedroPathing.constants.LConstants;
 
 
-@Autonomous(name = "EnumeratedStateAuto(V3.0)", group = "Examples")
+//@Autonomous(name = "EnumeratedStateAuto(V3.0)", group = "Examples")
 public class EnumeratedStateAuto extends OpMode {
 
     private Follower follower;

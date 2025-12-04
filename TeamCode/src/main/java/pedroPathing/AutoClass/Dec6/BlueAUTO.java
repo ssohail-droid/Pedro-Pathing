@@ -10,7 +10,6 @@ import com.pedropathing.util.Timer;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
-import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.Servo;
@@ -21,7 +20,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import pedroPathing.constants.FConstants;
 import pedroPathing.constants.LConstants;
 
-//@Autonomous(name = "BlueAUTO DEC", group = "Examples")
+@Autonomous(name = "BlueAUTO DEC", group = "Examples")
 public class BlueAUTO extends OpMode {
 
     private Follower follower;
@@ -37,7 +36,7 @@ public class BlueAUTO extends OpMode {
     private final Pose sevenPos = new Pose(43, 18.5, Math.toRadians(90));
 
     private PathChain moveOne, moveTwo, moveThree, moveFour;
-    private PathChain moveFive, moveSix, moveSeven, moveEight, moveNine;
+    private PathChain moveFive, moveSix, moveSeven, moveEight;
 
     private DcMotorEx shooterMotor, transferMotor, intakeMotor;
     private Servo gateServo, pusherServo;
@@ -46,32 +45,45 @@ public class BlueAUTO extends OpMode {
     private ShooterManager shooterManager;
 
     public void buildPaths() {
-        moveOne = follower.pathBuilder().addPath(new BezierLine(new Point(onePos), new Point(twoPos)))
-                .setLinearHeadingInterpolation(onePos.getHeading(), twoPos.getHeading()).build();
+        moveOne = follower.pathBuilder()
+                .addPath(new BezierLine(new Point(onePos), new Point(twoPos)))
+                .setLinearHeadingInterpolation(onePos.getHeading(), twoPos.getHeading())
+                .build();
 
-        moveTwo = follower.pathBuilder().addPath(new BezierLine(new Point(twoPos), new Point(threePos)))
-                .setLinearHeadingInterpolation(twoPos.getHeading(), threePos.getHeading()).build();
+        moveTwo = follower.pathBuilder()
+                .addPath(new BezierLine(new Point(twoPos), new Point(threePos)))
+                .setLinearHeadingInterpolation(twoPos.getHeading(), threePos.getHeading())
+                .build();
 
-        moveThree = follower.pathBuilder().addPath(new BezierLine(new Point(threePos), new Point(fourPos)))
-                .setLinearHeadingInterpolation(threePos.getHeading(), fourPos.getHeading()).build();
+        moveThree = follower.pathBuilder()
+                .addPath(new BezierLine(new Point(threePos), new Point(fourPos)))
+                .setLinearHeadingInterpolation(threePos.getHeading(), fourPos.getHeading())
+                .build();
 
-        moveFour = follower.pathBuilder().addPath(new BezierLine(new Point(fourPos), new Point(fivePos)))
-                .setLinearHeadingInterpolation(fourPos.getHeading(), fivePos.getHeading()).build();
+        moveFour = follower.pathBuilder()
+                .addPath(new BezierLine(new Point(fourPos), new Point(twoPos)))
+                .setLinearHeadingInterpolation(fourPos.getHeading(), twoPos.getHeading())
+                .build();
 
-        moveFive = follower.pathBuilder().addPath(new BezierLine(new Point(fivePos), new Point(twoPos)))
-                .setLinearHeadingInterpolation(fivePos.getHeading(), twoPos.getHeading()).build();
+        moveFive = follower.pathBuilder()
+                .addPath(new BezierLine(new Point(twoPos), new Point(fivePos)))
+                .setLinearHeadingInterpolation(twoPos.getHeading(), fivePos.getHeading())
+                .build();
 
-        moveSix = follower.pathBuilder().addPath(new BezierLine(new Point(twoPos), new Point(fivePos)))
-                .setLinearHeadingInterpolation(twoPos.getHeading(), fivePos.getHeading()).build();
+        moveSix = follower.pathBuilder()
+                .addPath(new BezierLine(new Point(fivePos), new Point(sixPos)))
+                .setLinearHeadingInterpolation(fivePos.getHeading(), sixPos.getHeading())
+                .build();
 
-        moveSeven = follower.pathBuilder().addPath(new BezierLine(new Point(fivePos), new Point(sixPos)))
-                .setLinearHeadingInterpolation(fivePos.getHeading(), sixPos.getHeading()).build();
+        moveSeven = follower.pathBuilder()
+                .addPath(new BezierLine(new Point(sixPos), new Point(twoPos)))
+                .setLinearHeadingInterpolation(sixPos.getHeading(), twoPos.getHeading())
+                .build();
 
-        moveEight = follower.pathBuilder().addPath(new BezierLine(new Point(sixPos), new Point(twoPos)))
-                .setLinearHeadingInterpolation(sixPos.getHeading(), twoPos.getHeading()).build();
-
-        moveNine = follower.pathBuilder().addPath(new BezierLine(new Point(twoPos), new Point(sevenPos)))
-                .setLinearHeadingInterpolation(twoPos.getHeading(), sevenPos.getHeading()).build();
+        moveEight = follower.pathBuilder()
+                .addPath(new BezierLine(new Point(twoPos), new Point(sevenPos)))
+                .setLinearHeadingInterpolation(twoPos.getHeading(), sevenPos.getHeading())
+                .build();
     }
 
     public void autonomousPathUpdate() {
@@ -93,7 +105,7 @@ public class BlueAUTO extends OpMode {
                 if (shooterManager.getState().equals("DONE")) {
                     intakeMotor.setPower(1.0);
                     follower.followPath(moveTwo);
-                    setPathState(-3);
+                    setPathState(3);
                 }
                 break;
 
@@ -106,6 +118,7 @@ public class BlueAUTO extends OpMode {
 
             case 4:
                 if (!follower.isBusy()) {
+                    intakeMotor.setPower(0);
                     follower.followPath(moveFour);
                     setPathState(5);
                 }
@@ -134,33 +147,26 @@ public class BlueAUTO extends OpMode {
 
             case 8:
                 if (!follower.isBusy()) {
+                    intakeMotor.setPower(0);
                     follower.followPath(moveSeven);
                     setPathState(9);
                 }
                 break;
 
             case 9:
-                if (!follower.isBusy()) {
-                    intakeMotor.setPower(0);
-                    follower.followPath(moveEight);
-                    setPathState(10);
-                }
+                shooterManager.startShooting();
+                setPathState(10);
                 break;
 
             case 10:
-                shooterManager.startShooting();
-                setPathState(11);
-                break;
-
-            case 11:
                 shooterManager.update();
                 if (shooterManager.getState().equals("DONE")) {
-                    follower.followPath(moveNine);
-                    setPathState(12);
+                    follower.followPath(moveEight);
+                    setPathState(11);
                 }
                 break;
 
-            case 12:
+            case 11:
                 if (!follower.isBusy()) {
                     setPathState(-1);
                 }
@@ -177,7 +183,6 @@ public class BlueAUTO extends OpMode {
     public void init() {
         pathTimer = new Timer();
         opmodeTimer = new Timer();
-        opmodeTimer.resetTimer();
 
         Constants.setConstants(FConstants.class, LConstants.class);
 
@@ -186,15 +191,12 @@ public class BlueAUTO extends OpMode {
         buildPaths();
 
         shooterMotor = hardwareMap.get(DcMotorEx.class, "shooter");
-        shooterMotor.setDirection(DcMotor.Direction.REVERSE);
-        shooterMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        shooterMotor.setVelocityPIDFCoefficients(12.0, 0.05, 8.0, 14.6);
-
         transferMotor = hardwareMap.get(DcMotorEx.class, "feed_motor");
-        intakeMotor = hardwareMap.get(DcMotorEx.class, "intake_motor");
+        intakeMotor = hardwareMap.get(DcMotorEx.class, "intake");
 
         gateServo = hardwareMap.get(Servo.class, "hold_servo");
         pusherServo = hardwareMap.get(Servo.class, "push_servo");
+
         beamSensor = hardwareMap.get(DistanceSensor.class, "shootDe");
 
         shooterManager = new ShooterManager();
@@ -212,8 +214,8 @@ public class BlueAUTO extends OpMode {
         autonomousPathUpdate();
 
         telemetry.addData("Path State", pathState);
-        telemetry.addData("Shooter RPM", shooterManager.getShooterRPM());
         telemetry.addData("Shooter State", shooterManager.getState());
+        telemetry.addData("Shooter RPM", shooterManager.getShooterRPM());
         telemetry.update();
     }
 
@@ -230,11 +232,21 @@ public class BlueAUTO extends OpMode {
         private final double PUSHER_PUSH = 0.9;
         private final double PUSHER_RETRACT = 0.3;
         private final double TICKS_PER_REV = 28.0;
-        private final double targetRPM = 2500;
+        private final double targetRPM = 2450;
         private final double targetTPS = (targetRPM * TICKS_PER_REV) / 60.0;
 
         private final long RECOVERY_TIMEOUT_MS = 1000;
         private final long PUSHER_DELAY_MS = 250;
+
+        private final double kP = 0.1;
+        private final double kI = 0.0003;
+        private final double kD = 0.003;
+        private final double kF = 0.000357;
+
+        public ShooterManager() {
+            shooterMotor.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
+            shooterMotor.setVelocityPIDFCoefficients(kP, kI, kD, kF);
+        }
 
         public void startShooting() {
             shooterMotor.setVelocity(targetTPS);

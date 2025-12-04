@@ -29,11 +29,11 @@ import pedroPathing.constants.FConstants;
 import pedroPathing.constants.LConstants;
 
 @Config
-@TeleOp(name = "TeleRed", group = "Examples")
+@TeleOp(name = "TeleOpRed", group = "Examples")
 public class TeleRed extends OpMode {
 
     private Follower follower;
-    private final Pose startPose = new Pose(16.8, 112.1, Math.toRadians(283));
+    private final Pose startPose = new Pose(39, 128, Math.toRadians(270));
     private final Pose targetPose = new Pose(22, 122, Math.toRadians(311));
 
     private DistanceSensor frontSensor;
@@ -58,10 +58,6 @@ public class TeleRed extends OpMode {
     private double manualRPMAdjustment = 0;
     private ElapsedTime servoToggleTimer = new ElapsedTime();
 
-    public static double TARGET_FRONT_DIST = 3;
-    public static double TARGET_RIGHT_DIST = 23;
-    public static double ALIGN_TOLERANCE = 1.0;
-    public static double ALIGN_SPEED = 0.1;
 
     public static double POSITION_TOLERANCE = 2.0;
     public static double HEADING_TOLERANCE_DEG = 5;
@@ -142,39 +138,7 @@ public class TeleRed extends OpMode {
         }
 
         // === SENSOR ALIGNMENT ===
-        if (aligning) {
-            if (System.currentTimeMillis() - alignStartTime > ALIGN_TIMEOUT_MS) {
-                aligning = false;
-                arrived = false;
-                telemetry.addLine("!!! Alignment timed out !!!");
-            } else {
-                boolean alignedFront = false;
-                boolean alignedRight = false;
 
-                double frontDist = frontSensor.getDistance(DistanceUnit.INCH);
-                double rightDist = rightSensor.getDistance(DistanceUnit.INCH);
-
-                double yPower = 0;
-                double xPower = 0;
-
-                if (Math.abs(frontDist - TARGET_FRONT_DIST) > ALIGN_TOLERANCE)
-                    yPower = (frontDist > TARGET_FRONT_DIST) ? ALIGN_SPEED : -ALIGN_SPEED;
-                else alignedFront = true;
-
-                if (Math.abs(rightDist - TARGET_RIGHT_DIST) > ALIGN_TOLERANCE)
-                    xPower = (rightDist > TARGET_RIGHT_DIST) ? ALIGN_SPEED : -ALIGN_SPEED;
-                else alignedRight = true;
-
-                if (!(alignedFront && alignedRight)) {
-                    follower.setTeleOpMovementVectors(xPower, yPower, 0, false);
-                    follower.update();
-                } else {
-                    aligning = false;
-                    arrived = false;
-                    telemetry.addLine(">>> Auto-alignment complete. <<<");
-                }
-            }
-        }
 
         // === DEFAULT DRIVE ===
         if (!navigating && !aligning) {
