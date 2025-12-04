@@ -29,11 +29,11 @@ import pedroPathing.constants.FConstants;
 import pedroPathing.constants.LConstants;
 
 @Config
-@TeleOp(name = "FieldCentricRedAuto", group = "Examples")
+@TeleOp(name = "TeleRed", group = "Examples")
 public class TeleRed extends OpMode {
 
     private Follower follower;
-    private final Pose startPose = new Pose(39, 128, Math.toRadians(270));
+    private final Pose startPose = new Pose(16.8, 112.1, Math.toRadians(283));
     private final Pose targetPose = new Pose(22, 122, Math.toRadians(311));
 
     private DistanceSensor frontSensor;

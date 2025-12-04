@@ -11,7 +11,7 @@ import pedroPathing.constants.FConstants;
 import pedroPathing.constants.LConstants;
 
 
-@Autonomous(name = "AutoSkeleton(WillDoNothing)", group = "Examples")
+//@Autonomous(name = "AutoSkeleton(WillDoNothing)", group = "Examples")
 public class AutoSkeleton extends OpMode {
     private Follower follower;
     private Timer pathTimer, actionTimer, opmodeTimer;

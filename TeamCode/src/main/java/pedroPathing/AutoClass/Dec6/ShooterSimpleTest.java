@@ -9,7 +9,7 @@ import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 
-@TeleOp(name = "Shooter Simple Test", group = "Tuning")
+//@TeleOp(name = "Shooter Simple Test", group = "Tuning")
 @Config
 public class ShooterSimpleTest extends OpMode {
 

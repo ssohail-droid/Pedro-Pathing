@@ -19,7 +19,7 @@ import pedroPathing.constants.LConstants;
  */
 
 @Disabled
-@TeleOp(name = "Example Field-Centric Teleop", group = "Examples")
+//@TeleOp(name = "Example Field-Centric Teleop", group = "Examples")
 public class ExampleFieldCentricTeleop extends OpMode {
     private Follower follower;
     private final Pose startPose = new Pose(0,0,0);

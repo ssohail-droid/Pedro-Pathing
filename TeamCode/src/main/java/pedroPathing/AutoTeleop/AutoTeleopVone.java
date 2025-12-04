@@ -39,7 +39,7 @@ import pedroPathing.constants.*;
  * @version 1.0, 5/6/2024
  */
 @Config
-@TeleOp(group = "AutoTeleopV1.1", name = "AutoTeleopV1.1")
+//@TeleOp(group = "AutoTeleopV1.1", name = "AutoTeleopV1.1")
 public class AutoTeleopVone extends OpMode {
     private PoseUpdater poseUpdater;
     private DashboardPoseTracker dashboardPoseTracker;

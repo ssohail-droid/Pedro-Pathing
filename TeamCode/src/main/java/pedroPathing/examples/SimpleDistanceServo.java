@@ -15,7 +15,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
  * 1. Distance Sensor: "dist_sensor"
  * 2. Servo: "my_servo"
  */
-@TeleOp(name = "Z_Simple_Sensor_Servo", group = "Simple")
+//@TeleOp(name = "Z_Simple_Sensor_Servo", group = "Simple")
 public class SimpleDistanceServo extends OpMode {
 
     // Declare objects (short names for simplicity)

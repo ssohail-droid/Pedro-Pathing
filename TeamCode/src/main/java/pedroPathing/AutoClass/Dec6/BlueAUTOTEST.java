@@ -12,7 +12,7 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import pedroPathing.constants.FConstants;
 import pedroPathing.constants.LConstants;
 
-@Autonomous(name = "BlueAUTOTEST DEC", group = "Examples")
+//@Autonomous(name = "BlueAUTOTEST DEC", group = "Examples")
 public class BlueAUTOTEST extends OpMode {
 
     private Follower follower;
