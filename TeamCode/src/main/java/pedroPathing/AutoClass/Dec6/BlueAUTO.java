@@ -20,7 +20,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import pedroPathing.constants.FConstants;
 import pedroPathing.constants.LConstants;
 
-@Autonomous(name = "BlueAUTO DEC", group = "Examples")
+//@Autonomous(name = "BlueAUTO DEC", group = "Examples")
 public class BlueAUTO extends OpMode {
 
     private Follower follower;

@@ -33,7 +33,7 @@ import pedroPathing.constants.LConstants;
 public class TeleBlue extends OpMode {
 
     private Follower follower;
-    private final Pose startPose = new Pose(20, 30.3, Math.toRadians(60));
+    private final Pose startPose = new Pose(72, 72, Math.toRadians(0));
     private final Pose targetPose = new Pose(24, 24, Math.toRadians(50));
 
     private DistanceSensor frontSensor;

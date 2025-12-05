@@ -33,8 +33,8 @@ import pedroPathing.constants.LConstants;
 public class TeleRed extends OpMode {
 
     private Follower follower;
-    private final Pose startPose = new Pose(39, 128, Math.toRadians(270));
-    private final Pose targetPose = new Pose(22, 122, Math.toRadians(311));
+    private final Pose startPose = new Pose(17.8, 11.63, Math.toRadians(283.6));
+    private final Pose targetPose = new Pose(19.25, 20.85, Math.toRadians(312));
 
     private DistanceSensor frontSensor;
     private DistanceSensor rightSensor;
