@@ -20,7 +20,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 @Config
 public class DashboardShooterColor extends OpMode {
 
-    // ======= ⚙️ HARDWARE =======
+    //// ======= ⚙️ HARDWARE =======
     private DcMotorEx shooterMotor, intake;
     private Servo kick_servo, spin_servo;
     private NormalizedColorSensor colorSensorLeft, colorSensorRight;
