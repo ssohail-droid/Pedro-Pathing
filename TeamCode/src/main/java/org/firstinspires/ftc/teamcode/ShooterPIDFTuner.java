@@ -11,7 +11,7 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 
 @Config
-@TeleOp(name = "Shooter PIDF Solo Tuner", group = "Tuning")
+//@TeleOp(name = "Shooter PIDF Solo Tuner", group = "Tuning")
 public class ShooterPIDFTuner extends LinearOpMode {
 
     private DcMotorEx shooterMotor;

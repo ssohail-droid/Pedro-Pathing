@@ -7,7 +7,7 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.Range;
 
-@TeleOp(name = "Dashboard Shooter/Servo Test", group = "Test")
+//@TeleOp(name = "Dashboard Shooter/Servo Test", group = "Test")
 @Config // *** IMPORTANT: Annotate for Dashboard access ***
 public class ShooterWithAdjustments extends OpMode {
 

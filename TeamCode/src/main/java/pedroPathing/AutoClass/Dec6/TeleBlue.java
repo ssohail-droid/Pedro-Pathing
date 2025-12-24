@@ -29,7 +29,7 @@ import pedroPathing.constants.FConstants;
 import pedroPathing.constants.LConstants;
 
 @Config
-@TeleOp(name = "TeleBlue", group = "Examples")
+//@TeleOp(name = "TeleBlue", group = "Examples")
 public class TeleBlue extends OpMode {
 
     private Follower follower;

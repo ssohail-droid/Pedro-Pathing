@@ -8,7 +8,7 @@ import com.qualcomm.robotcore.hardware.Gamepad;
 
 // The @Config tag enables tuning these variables via the FTC Dashboard
 @Config
-@TeleOp(name = "ThreePositionServo", group = "Example")
+//@TeleOp(name = "ThreePositionServo", group = "Example")
 public class ThreePosServoTest extends OpMode {
 
     // --- 🎯 DASHBOARD TUNABLE POSITIONS (0.0 to 1.0) ---

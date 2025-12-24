@@ -18,7 +18,7 @@ import pedroPathing.constants.FConstants;
 import pedroPathing.constants.LConstants;
 
 @Config
-@TeleOp(name = "DriveOnly blue end", group = "Refactored")
+//@TeleOp(name = "DriveOnly blue end", group = "Refactored")
 public class DriveTrain extends OpMode {
 
     private Follower follower;

@@ -38,7 +38,7 @@ import pedroPathing.constants.LConstants;
  * You can adjust the square size on FTC Dashboard (192.168.43.1:8080/dash)
  */
 @Config
-@Autonomous(name = "Square Test 24 Inch", group = "Localization Tests")
+//@Autonomous(name = "Square Test 24 Inch", group = "Localization Tests")
 public class SquareTest24Inch extends LinearOpMode {
 
     // Configurable square size (adjustable via FTC Dashboard)

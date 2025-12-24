@@ -19,7 +19,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 
-@TeleOp(name = "Shooter + Color Sequence + CR Servos", group = "Main")
+//@TeleOp(name = "Shooter + Color Sequence + CR Servos", group = "Main")
 @Config
 public class DashboardShooterColor extends OpMode {
 

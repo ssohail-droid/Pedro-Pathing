@@ -8,7 +8,7 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo; // Required for Servo
 import com.qualcomm.robotcore.util.ElapsedTime;
 
-@TeleOp(name = "Dashboard RPM Shooter + Kicker", group = "Test")
+//@TeleOp(name = "Dashboard RPM Shooter + Kicker", group = "Test")
 @Config
 public class ShooterWithKicker extends OpMode {
 

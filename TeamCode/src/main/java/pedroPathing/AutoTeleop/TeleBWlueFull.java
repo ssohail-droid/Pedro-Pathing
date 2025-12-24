@@ -26,19 +26,39 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import pedroPathing.constants.FConstants;
 import pedroPathing.constants.LConstants;
 
-@TeleOp(name = "TeleBlue 2Drive + Intake + Shoot + Hood", group = "Main")
+@TeleOp(name = "TeleBlue 4Drive + Intake + Shoot + Hood", group = "Main")
 @Config
-public class TeleBlueFull extends OpMode {
+public class TeleBWlueFull extends OpMode {
 
     /* ================= DRIVE ================= */
     private Follower follower;
     private final Pose startPose = new Pose(50, 9, Math.toRadians(90));
-    public static Pose targetPose = new Pose(41.71, 111.05, Math.toRadians(130));
+
+    public static Pose TARGET_A = new Pose(41.71, 111.05, Math.toRadians(140));
+    public static Pose TARGET_B = new Pose(28.83, 122.81, Math.toRadians(140));
+    public static Pose TARGET_C = new Pose(61.08, 14.38, Math.toRadians(112.5));
+
+    /* ===== PER-TARGET RPM + HOOD ===== */
+    public static double RPM_A  = 2500;
+    public static double RPM_B  = 2200;
+    public static double RPM_C  = 3500;
+
+    public static double HOOD_A = 0.75;
+    public static double HOOD_B = 1.0;
+    public static double HOOD_C = 0.5;
+
+    private Pose activeTarget = null;
     private boolean navigating = false;
-    private boolean lastXDrive = false;
+
+    private double activeRPM  = 0;
+    private double activeHood = HOOD_A;
 
     public static double POS_TOL = 2.0;
     public static double HEAD_TOL_DEG = 5.0;
+
+    private boolean lastXDrive = false;
+    private boolean lastYDrive = false;
+    private boolean lastBDrive = false;
 
     /* ================= HARDWARE ================= */
     private DcMotorEx intake, shooter;
@@ -52,13 +72,10 @@ public class TeleBlueFull extends OpMode {
     public static double DISTANCE_CM = 2.0;
 
     /* ================= SHOOTER ================= */
-    public static double SHOOTER_RPM = 2600;
     public static double TICKS_PER_REV = 28.0;
-
-    // PIDF (FTC-proven baseline)
-    public static double SHOOTER_P = 80.0;
+    public static double SHOOTER_P = 70.0;
     public static double SHOOTER_I = 0.0;
-    public static double SHOOTER_D = 12.0;
+    public static double SHOOTER_D = 8.0;
     public static double SHOOTER_F = 13.5;
     public static double RPM_TOLERANCE = 75;
 
@@ -66,6 +83,11 @@ public class TeleBlueFull extends OpMode {
     public static double INTAKE_0 = 0.18;
     public static double INTAKE_1 = 0.46;
     public static double INTAKE_2 = 0.63;
+
+    /* ================= PWM ================= */
+    public static int PWM_MIN = 800;
+    public static int PWM_MAX = 2200;
+
 
     public static double SHOOT_A = 0.56;
     public static double SHOOT_B = 0.32;
@@ -84,13 +106,8 @@ public class TeleBlueFull extends OpMode {
     public static double POST_MS = 500;
 
     /* ================= HOOD ================= */
-    public static double HOOD_TARGET = 0.50;
     public static final double HOOD_MIN = 0.73;
-    public static final double HOOD_MAX = 1;
-
-    /* ================= PWM ================= */
-    public static int PWM_MIN = 800;
-    public static int PWM_MAX = 2200;
+    public static final double HOOD_MAX = 1.0;
 
     /* ================= MODES ================= */
     private enum Mode { IDLE, INTAKE, SHOOT }
@@ -126,9 +143,7 @@ public class TeleBlueFull extends OpMode {
         shooter.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
         shooter.setPIDFCoefficients(
                 DcMotorEx.RunMode.RUN_USING_ENCODER,
-                new PIDFCoefficients(
-                        SHOOTER_P, SHOOTER_I, SHOOTER_D, SHOOTER_F
-                )
+                new PIDFCoefficients(SHOOTER_P, SHOOTER_I, SHOOTER_D, SHOOTER_F)
         );
 
         crLeft = hardwareMap.get(CRServo.class, "cr_left");
@@ -144,6 +159,7 @@ public class TeleBlueFull extends OpMode {
         if (adjustServo instanceof PwmControl)
             ((PwmControl) adjustServo).setPwmRange(new PwmControl.PwmRange(PWM_MIN, PWM_MAX));
 
+
         kickServo.setPosition(KICK_IDLE);
         spinServo.setPosition(INTAKE_0);
 
@@ -156,34 +172,70 @@ public class TeleBlueFull extends OpMode {
     @Override
     public void loop() {
 
-        /* ----- DRIVE ----- */
-        if (gamepad1.x && !lastXDrive && !navigating) {
-            navigating = true;
-            follower.followPath(
-                    follower.pathBuilder()
-                            .addPath(new BezierLine(
-                                    new Point(follower.getPose()),
-                                    new Point(targetPose)
-                            ))
-                            .setLinearHeadingInterpolation(
-                                    follower.getPose().getHeading(),
-                                    targetPose.getHeading()
-                            )
-                            .build()
-            );
-        }
-        lastXDrive = gamepad1.x;
+        /* ===== TARGET SELECT ===== */
+        boolean xPressed = gamepad1.x && !lastXDrive;
+        boolean yPressed = gamepad1.y && !lastYDrive;
+        boolean bPressed = gamepad1.b && !lastBDrive;
 
+        if (!navigating) {
+            if (xPressed) {
+                activeTarget = TARGET_A;
+                activeRPM = RPM_A;
+                activeHood = HOOD_A;
+                navigating = true;
+            } else if (yPressed) {
+                activeTarget = TARGET_B;
+                activeRPM = RPM_B;
+                activeHood = HOOD_B;
+                navigating = true;
+            } else if (bPressed) {
+                activeTarget = TARGET_C;
+                activeRPM = RPM_C;
+                activeHood = HOOD_C;
+                navigating = true;
+            }
+
+            if (navigating) {
+                follower.followPath(
+                        follower.pathBuilder()
+                                .addPath(new BezierLine(
+                                        new Point(follower.getPose()),
+                                        new Point(activeTarget)
+                                ))
+                                .setLinearHeadingInterpolation(
+                                        follower.getPose().getHeading(),
+                                        activeTarget.getHeading()
+                                )
+                                .build()
+                );
+            }
+        }
+
+        lastXDrive = gamepad1.x;
+        lastYDrive = gamepad1.y;
+        lastBDrive = gamepad1.b;
+
+        /* ===== PRE-SPIN ONLY WHILE TRAVELING ===== */
+        if (navigating && mode != Mode.SHOOT) {
+            setShooterRPM(activeRPM);
+        }
+
+        /* ===== CANCEL ===== */
         if ((gamepad1.left_bumper || gamepad1.right_bumper) && navigating) {
             navigating = false;
+            activeTarget = null;
+            setShooterRPM(0);
             follower.breakFollowing();
             follower.startTeleopDrive();
         }
 
+        /* ===== DRIVE ===== */
         if (navigating) {
             follower.update();
             if (arrived()) {
                 navigating = false;
+                activeTarget = null;
+                setShooterRPM(0);
                 follower.breakFollowing();
                 follower.startTeleopDrive();
             }
@@ -197,11 +249,11 @@ public class TeleBlueFull extends OpMode {
             follower.update();
         }
 
-        /* ----- MODE INPUT ----- */
-        boolean aPressed = gamepad2.a && !lastA;
-        boolean xShootPressed = gamepad2.x && !lastXShoot;
-        lastA = gamepad2.a;
-        lastXShoot = gamepad2.x;
+        /* ===== MODE INPUT ===== */
+        boolean aPressed = gamepad1.dpad_down && !lastA;
+        boolean xShootPressed = gamepad1.dpad_up && !lastXShoot;
+        lastA = gamepad1.dpad_down;
+        lastXShoot = gamepad1.dpad_up;
 
         if (aPressed) mode = Mode.INTAKE;
 
@@ -209,29 +261,23 @@ public class TeleBlueFull extends OpMode {
             mode = Mode.SHOOT;
             shootState = ShootState.A;
             shootTimer.reset();
-            setShooterRPM(SHOOTER_RPM); // 🔒 LOCK SPEED ONCE
+            setShooterRPM(activeRPM);
         }
 
-        /* ----- HOOD ----- */
+        /* ===== HOOD APPLY ===== */
         adjustServo.setPosition(
-                Math.max(HOOD_MIN, Math.min(HOOD_MAX, HOOD_TARGET))
+                Math.max(HOOD_MIN, Math.min(HOOD_MAX, activeHood))
         );
 
-        /* ----- MODES ----- */
+        /* ===== MODES ===== */
         switch (mode) {
             case INTAKE: runIntake(); break;
             case SHOOT:  runShoot();  break;
             default:     hold();      break;
         }
 
-        telemetry.addData("Mode", mode);
-        telemetry.addData("Ball Count", ballCount);
         telemetry.addData("Shooter RPM", getShooterRPM());
-
-        telemetry.addLine("=== Pose ===");
-        telemetry.addData("X", "%.2f", follower.getPose().getX());
-        telemetry.addData("Y", "%.2f", follower.getPose().getY());
-        telemetry.addData("Heading°", "%.1f", Math.toDegrees(follower.getPose().getHeading()));
+        telemetry.addData("Mode", mode);
         telemetry.update();
     }
 
@@ -239,10 +285,8 @@ public class TeleBlueFull extends OpMode {
     private void runIntake() {
         intake.setPower(INTAKE_POWER);
         setCR(CR_INTAKE_POWER, CR_INTAKE_POWER);
-        setShooterRPM(0);
 
         boolean detected = distanceSensor.getDistance(DistanceUnit.CM) <= DISTANCE_CM;
-
         if (detected && !lastDetected && detectTimer.seconds() > 0.4 && ballCount < 3) {
             ballCount++;
             detectTimer.reset();
@@ -260,7 +304,6 @@ public class TeleBlueFull extends OpMode {
         intake.setPower(0);
 
         switch (shootState) {
-
             case A:
                 spinServo.setPosition(SHOOT_A);
                 setCR(CR_A_L, CR_A_R);
@@ -354,7 +397,7 @@ public class TeleBlueFull extends OpMode {
     private void hold() {
         intake.setPower(0);
         setCR(0, 0);
-        setShooterRPM(0);
+        if (mode != Mode.SHOOT && !navigating) setShooterRPM(0);
         spinServo.setPosition(INTAKE_0);
         kickServo.setPosition(KICK_IDLE);
     }
@@ -373,19 +416,21 @@ public class TeleBlueFull extends OpMode {
     }
 
     private boolean shooterAtSpeed() {
-        return Math.abs(getShooterRPM() - SHOOTER_RPM) < RPM_TOLERANCE;
+        return Math.abs(getShooterRPM() - activeRPM) < RPM_TOLERANCE;
     }
 
     private boolean arrived() {
+        if (activeTarget == null) return false;
+
         Pose p = follower.getPose();
-        double dx = targetPose.getX() - p.getX();
-        double dy = targetPose.getY() - p.getY();
+        double dx = activeTarget.getX() - p.getX();
+        double dy = activeTarget.getY() - p.getY();
         double dist = Math.hypot(dx, dy);
 
         double headingErr = Math.toDegrees(
                 Math.atan2(
-                        Math.sin(p.getHeading() - targetPose.getHeading()),
-                        Math.cos(p.getHeading() - targetPose.getHeading())
+                        Math.sin(p.getHeading() - activeTarget.getHeading()),
+                        Math.cos(p.getHeading() - activeTarget.getHeading())
                 )
         );
 

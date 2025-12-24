@@ -7,7 +7,7 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
-@TeleOp(name = "Dashboard RPM Shooter", group = "Test")
+//@TeleOp(name = "Dashboard RPM Shooter", group = "Test")
 @Config // Enables FTC Dashboard access
 public class DashboardSimpleShooter extends OpMode {
 

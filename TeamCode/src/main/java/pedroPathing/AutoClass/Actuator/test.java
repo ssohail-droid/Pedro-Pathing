@@ -13,7 +13,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 
 // The @Config tag enables tuning these variables via the FTC Dashboard
 @Config
-@TeleOp(name = "ColorTriggeredAlternatingServo", group = "Custom")
+//@TeleOp(name = "ColorTriggeredAlternatingServo", group = "Custom")
 public class test extends LinearOpMode {
 
     // --- 🎯 DASHBOARD TUNABLE POSITIONS (0.0 to 1.0) ---

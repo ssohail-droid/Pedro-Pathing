@@ -8,7 +8,7 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
-@TeleOp(name = "Full Shooter System v2", group = "Main")
+//@TeleOp(name = "Full Shooter System v2", group = "Main")
 @Config
 public class DashboardShooterCombination extends OpMode {
 

@@ -11,7 +11,7 @@ import com.qualcomm.robotcore.hardware.PwmControl;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
-@TeleOp(name = "Full Shooter System With Intake", group = "Main")
+//@TeleOp(name = "Full Shooter System With Intake", group = "Main")
 @Config
 public class ShooterWithIntake extends OpMode {
 
