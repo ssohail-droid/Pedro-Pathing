@@ -24,7 +24,7 @@ public class BlueAutoTest extends OpMode {
     /* ================= DRIVE ================= */
     private Follower follower;
     private Timer pathTimer;
-    private int pathState;
+    private int pathState;//
 
     private final Pose startPos = new Pose(48, 9.2, Math.toRadians(90));
     private final Pose shootPos = new Pose(41, 111.05, Math.toRadians(140));
