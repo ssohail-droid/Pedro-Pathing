@@ -28,9 +28,8 @@ public class BlueAutoTest extends OpMode {
 
     private final Pose startPos = new Pose(48, 9.2, Math.toRadians(90));
     private final Pose shootPos = new Pose(41, 111.05, Math.toRadians(140));
-    private final Pose rowOneGetReadyToIntake = new Pose(48.4, 83.6, Math.toRadians(0));
-    private final Pose IntakeTheRow = new Pose(22, 83.6, Math.toRadians(0));
-
+    private final Pose intakeRowOnePos = new Pose(44, 78, Math.toRadians(0));
+    private final Pose intakePickUpRowOnePos = new Pose(16, 78, Math.toRadians(0));
 
     private PathChain moveOne, moveTwo, moveThree, moveFour;
 
@@ -45,7 +44,7 @@ public class BlueAutoTest extends OpMode {
     public static int PWM_MAX = 2200;
 
     /* ================= INTAKE ================= */
-    public static double INTAKE_POWER = 0.4;
+    public static double INTAKE_POWER = 0.8;
     public static double CR_INTAKE_POWER = 1.0;
     public static double DISTANCE_CM = 2.0;
 
@@ -90,50 +89,55 @@ public class BlueAutoTest extends OpMode {
 
     private ShootState shootState = ShootState.A;
     private final ElapsedTime shootTimer = new ElapsedTime();
-
     private boolean prespin = false;
 
-    /* ================= PATH ================= */
+    /* ================= PATHS ================= */
     public void buildPaths() {
+
         moveOne = follower.pathBuilder()
                 .addPath(new BezierLine(new Point(startPos), new Point(shootPos)))
-                .setLinearHeadingInterpolation(startPos.getHeading(),shootPos.getHeading())
+                .setLinearHeadingInterpolation(startPos.getHeading(), shootPos.getHeading())
                 .build();
 
         moveTwo = follower.pathBuilder()
-                .addPath(new BezierLine(new Point(shootPos), new Point(rowOneGetReadyToIntake)))
-                .setLinearHeadingInterpolation(shootPos.getHeading(), rowOneGetReadyToIntake.getHeading())
+                .addPath(new BezierLine(new Point(shootPos), new Point(intakeRowOnePos)))
+                .setLinearHeadingInterpolation(shootPos.getHeading(), intakeRowOnePos.getHeading())
                 .build();
 
         moveThree = follower.pathBuilder()
-                .addPath(new BezierLine(new Point(rowOneGetReadyToIntake), new Point(IntakeTheRow)))
-                .setLinearHeadingInterpolation(rowOneGetReadyToIntake.getHeading(), IntakeTheRow.getHeading())
+                .addPath(new BezierLine(
+                        new Point(intakeRowOnePos),
+                        new Point(intakePickUpRowOnePos)))
+                .setLinearHeadingInterpolation(
+                        intakeRowOnePos.getHeading(),
+                        intakePickUpRowOnePos.getHeading())
                 .build();
 
+        // 🔥 RETURN TO SHOOT
         moveFour = follower.pathBuilder()
-                .addPath(new BezierLine(new Point(rowOneGetReadyToIntake), new Point(IntakeTheRow)))
-                .setLinearHeadingInterpolation(rowOneGetReadyToIntake.getHeading(), IntakeTheRow.getHeading())
+                .addPath(new BezierLine(
+                        new Point(intakePickUpRowOnePos),
+                        new Point(shootPos)))
+                .setLinearHeadingInterpolation(
+                        intakePickUpRowOnePos.getHeading(),
+                        shootPos.getHeading())
                 .build();
-
-
     }
 
     /* ================= AUTO FSM ================= */
     public void autonomousPathUpdate() {
+
         switch (pathState) {
 
             case 0:
                 prespin = true;
                 setShooterRPM(RPM);
                 adjustServo.setPosition(HOOD_POS);
-
                 follower.followPath(moveOne);
                 setPathState(1);
                 break;
 
             case 1:
-                setShooterRPM(RPM);
-
                 if (!follower.isBusy()) {
                     prespin = false;
                     startShoot(RPM, HOOD_POS);
@@ -142,57 +146,49 @@ public class BlueAutoTest extends OpMode {
                 break;
 
             case 2:
-                if (!follower.isBusy()) {
-                    prespin = false;
-                    runIntake();
+                updateMechanisms();
+                if (mode == Mode.IDLE) {
+                    follower.followPath(moveTwo);
                     setPathState(3);
                 }
                 break;
 
             case 3:
-                if(!follower.isBusy()) {
+                if (!follower.isBusy()) {
+                    prespin = true;          // 🔥 PRESIPN DURING INTAKE
+                    setShooterRPM(RPM);
                     runIntake();
-                    prespin = false;
-                    follower.followPath(moveTwo);
+                    follower.followPath(moveThree);
+                    follower.setMaxPower(0.2);
                     setPathState(4);
                 }
                 break;
 
             case 4:
-                if(!follower.isBusy()) {
-                    runIntake();
-                    prespin = false;
-                    follower.followPath(moveThree);
-                    follower.setMaxPower(0.4);
+                prespin = true;
+                setShooterRPM(RPM);
+                runIntake();
+
+                if (!follower.isBusy()) {
+                    follower.setMaxPower(1);
+                    stopIntake();
+                    follower.followPath(moveFour);
                     setPathState(5);
                 }
                 break;
 
             case 5:
-                if(!follower.isBusy()) {
-                    stopIntake();
-                    prespin = true;
-                    setShooterRPM(RPM);
-                    adjustServo.setPosition(HOOD_POS);
-                    follower.followPath(moveFour);
-                    follower.setMaxPower(1);
-                    setPathState(6);
-                }
-                break;
-
-            case 6:
+                prespin = true;
                 setShooterRPM(RPM);
 
                 if (!follower.isBusy()) {
                     prespin = false;
                     startShoot(RPM, HOOD_POS);
-                    setPathState(7);
+                    setPathState(6);
                 }
                 break;
 
-
-
-            case 7:
+            case 6:
                 updateMechanisms();
                 if (mode == Mode.IDLE) {
                     setPathState(-1);
@@ -278,14 +274,20 @@ public class BlueAutoTest extends OpMode {
         else hold();
     }
 
-    /* ================= INTAKE (FROM TELEOP) ================= */
+    /* ================= INTAKE ================= */
 
     private void runIntake() {
+
+        if (ballCount >= 3) {
+            stopIntake();
+            return;
+        }
+
         intake.setPower(INTAKE_POWER);
         setCR(CR_INTAKE_POWER, CR_INTAKE_POWER);
 
         boolean detected = distanceSensor.getDistance(DistanceUnit.CM) <= DISTANCE_CM;
-        if (detected && !lastDetected && detectTimer.seconds() > 0.4 && ballCount < 3) {
+        if (detected && !lastDetected && detectTimer.seconds() > 0.4) {
             ballCount++;
             detectTimer.reset();
         }
@@ -302,7 +304,7 @@ public class BlueAutoTest extends OpMode {
         setCR(0, 0);
     }
 
-    /* ================= SHOOT ================= */
+    /* ================= SHOOT FSM ================= */
 
     private void runShoot() {
         switch (shootState) {
