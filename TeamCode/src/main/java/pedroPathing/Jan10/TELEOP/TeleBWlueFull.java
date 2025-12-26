@@ -1,4 +1,4 @@
-package pedroPathing.AutoTeleop;
+package pedroPathing.Jan10.TELEOP;
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
