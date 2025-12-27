@@ -15,7 +15,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 
-@TeleOp(name = "Intake Ball Counter", group = "Main")
+//@TeleOp(name = "Intake Ball Counter", group = "Main")
 @Config
 public class IntakeBallCounter extends OpMode {
 

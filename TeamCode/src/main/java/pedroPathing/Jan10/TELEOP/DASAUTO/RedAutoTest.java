@@ -18,22 +18,22 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import pedroPathing.constants.FConstants;
 import pedroPathing.constants.LConstants;
 
-@Autonomous(name = "Blue Auto", group = "Main")
-public class BlueAutoTest extends OpMode {
+@Autonomous(name = "Red Auto", group = "Main")
+public class RedAutoTest extends OpMode {
 
     /* ================= DRIVE ================= */
     private Follower follower;
     private Timer pathTimer;
     private int pathState;
 
-    private final Pose startPos = new Pose(32, 135, Math.toRadians(180));
-    private final Pose shootPos = new Pose(41, 111.05, Math.toRadians(140));
+    private final Pose startPos = new Pose(111, 135, Math.toRadians(0));
+    private final Pose shootPos = new Pose(102.3, 111.05, Math.toRadians(45));
 
-    private final Pose intakeRowOnePos = new Pose(48, 78, Math.toRadians(0));
-    private final Pose intakePickUpRowOnePos = new Pose(18, 78, Math.toRadians(0));
+    private final Pose intakeRowOnePos = new Pose(100, 78, Math.toRadians(180));
+    private final Pose intakePickUpRowOnePos = new Pose(121, 78, Math.toRadians(180));
 
-    private final Pose intakeRowTwoPos = new Pose(48, 55, Math.toRadians(0));
-    private final Pose intakePickUpRowTwoPos = new Pose(18, 55, Math.toRadians(0));
+    private final Pose intakeRowTwoPos = new Pose(100, 55, Math.toRadians(180));
+    private final Pose intakePickUpRowTwoPos = new Pose(121, 55, Math.toRadians(180));
 
     private PathChain moveOne, moveTwo, moveThree, moveFour;
     private PathChain moveFive, moveSix, moveSeven;

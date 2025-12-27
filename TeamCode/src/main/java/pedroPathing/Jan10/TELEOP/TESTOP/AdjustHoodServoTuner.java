@@ -8,7 +8,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.PwmControl;
 import com.qualcomm.robotcore.hardware.Servo;
 
-@TeleOp(name = "Adjust Hood Servo Tuner", group = "Test")
+//@TeleOp(name = "Adjust Hood Servo Tuner", group = "Test")
 @Config
 public class AdjustHoodServoTuner extends OpMode {
 

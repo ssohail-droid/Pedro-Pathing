@@ -14,7 +14,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 
-@TeleOp(name = "Spin Servo Distance Sequence", group = "Test")
+//@TeleOp(name = "Spin Servo Distance Sequence", group = "Test")
 @Config
 public class SpinServoDistanceSequence extends OpMode {
 

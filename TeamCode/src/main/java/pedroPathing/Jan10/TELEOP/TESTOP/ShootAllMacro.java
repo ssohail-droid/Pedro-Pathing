@@ -12,7 +12,7 @@ import com.qualcomm.robotcore.hardware.PwmControl;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
-@TeleOp(name = "ShootAll Macro (X)", group = "Main")
+//@TeleOp(name = "ShootAll Macro (X)", group = "Main")
 @Config
 public class ShootAllMacro extends OpMode {
 
