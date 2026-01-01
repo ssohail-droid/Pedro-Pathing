@@ -67,9 +67,9 @@ public class TeleBlueJan extends OpMode {
     private DistanceSensor distanceSensor;
 
     /* ================= INTAKE ================= */
-    public static double INTAKE_POWER = 0.4;
+    public static double INTAKE_POWER = 0.8;
     public static double CR_INTAKE_POWER = 1.0;
-    public static double DISTANCE_CM = 2.0;
+    public static double DISTANCE_CM = 3.0;
 
     /* ================= SHOOTER ================= */
     public static double TICKS_PER_REV = 28.0;
@@ -250,10 +250,10 @@ public class TeleBlueJan extends OpMode {
         }
 
         /* ===== MODE INPUT ===== */
-        boolean aPressed = gamepad1.dpad_down && !lastA;
-        boolean xShootPressed = gamepad1.dpad_up && !lastXShoot;
-        lastA = gamepad1.dpad_down;
-        lastXShoot = gamepad1.dpad_up;
+        boolean aPressed = gamepad2.dpad_down && !lastA;
+        boolean xShootPressed = gamepad2.dpad_up && !lastXShoot;
+        lastA = gamepad2.dpad_down;
+        lastXShoot = gamepad2.dpad_up;
 
         if (aPressed) mode = Mode.INTAKE;
 

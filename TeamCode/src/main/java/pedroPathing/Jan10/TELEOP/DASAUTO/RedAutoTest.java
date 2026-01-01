@@ -29,11 +29,11 @@ public class RedAutoTest extends OpMode {
     private final Pose startPos = new Pose(111, 135, Math.toRadians(0));
     private final Pose shootPos = new Pose(102.3, 111.05, Math.toRadians(45));
 
-    private final Pose intakeRowOnePos = new Pose(100, 78, Math.toRadians(180));
-    private final Pose intakePickUpRowOnePos = new Pose(121, 78, Math.toRadians(180));
+    private final Pose intakeRowOnePos = new Pose(100, 90, Math.toRadians(180));
+    private final Pose intakePickUpRowOnePos = new Pose(121, 90, Math.toRadians(180));
 
-    private final Pose intakeRowTwoPos = new Pose(100, 55, Math.toRadians(180));
-    private final Pose intakePickUpRowTwoPos = new Pose(121, 55, Math.toRadians(180));
+    private final Pose intakeRowTwoPos = new Pose(100, 65, Math.toRadians(180));
+    private final Pose intakePickUpRowTwoPos = new Pose(121, 65, Math.toRadians(180));
 
     private PathChain moveOne, moveTwo, moveThree, moveFour;
     private PathChain moveFive, moveSix, moveSeven;

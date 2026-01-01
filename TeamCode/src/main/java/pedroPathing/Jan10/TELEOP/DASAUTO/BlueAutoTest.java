@@ -29,11 +29,15 @@ public class BlueAutoTest extends OpMode {
     private final Pose startPos = new Pose(32, 135, Math.toRadians(180));
     private final Pose shootPos = new Pose(41, 111.05, Math.toRadians(140));
 
-    private final Pose intakeRowOnePos = new Pose(48, 78, Math.toRadians(0));
-    private final Pose intakePickUpRowOnePos = new Pose(18, 78, Math.toRadians(0));
+    private final Pose intakeRowOnePos = new Pose(52, 78, Math.toRadians(0));
+    /// ///////////////////////////////////////////////^^from ball
+    private final Pose intakePickUpRowOnePos = new Pose(22, 78, Math.toRadians(0));
+    /// /////////////////////////////////////////////////////^^from gg
 
-    private final Pose intakeRowTwoPos = new Pose(48, 55, Math.toRadians(0));
-    private final Pose intakePickUpRowTwoPos = new Pose(18, 55, Math.toRadians(0));
+    private final Pose intakeRowTwoPos = new Pose(52, 55, Math.toRadians(0));
+    /// ///////////////////////////////////////////////^^from ball
+    private final Pose intakePickUpRowTwoPos = new Pose(22, 55, Math.toRadians(0));
+    /// /////////////////////////////////////////////////////^^from gg
 
     private PathChain moveOne, moveTwo, moveThree, moveFour;
     private PathChain moveFive, moveSix, moveSeven;
