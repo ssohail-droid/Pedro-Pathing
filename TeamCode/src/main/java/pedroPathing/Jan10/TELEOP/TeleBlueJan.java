@@ -26,9 +26,9 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import pedroPathing.constants.FConstants;
 import pedroPathing.constants.LConstants;
 
-//@TeleOp(name = "Tele Blue Jan 10", group = "Main")
+@TeleOp(name = "TELE BLUE BACK", group = "Main")
 @Config
-public class TeleEBlueJan extends OpMode {
+public class TeleBlueJan extends OpMode {
 
     /* ================= DRIVE ================= */
     private Follower follower;
@@ -39,9 +39,9 @@ public class TeleEBlueJan extends OpMode {
     public static Pose TARGET_C = new Pose(61.08, 14.38, Math.toRadians(112.5));
 
     /* ===== PER-TARGET RPM + HOOD ===== */
-    public static double RPM_A  = 2500;
-    public static double RPM_B  = 2200;
-    public static double RPM_C  = 3500;
+    public static double RPM_A = 2500;
+    public static double RPM_B = 2200;
+    public static double RPM_C = 3500;
 
     public static double HOOD_A = 0.75;
     public static double HOOD_B = 1.0;
@@ -50,7 +50,7 @@ public class TeleEBlueJan extends OpMode {
     private Pose activeTarget = null;
     private boolean navigating = false;
 
-    private double activeRPM  = 0;
+    private double activeRPM = 0;
     private double activeHood = HOOD_A;
 
     public static double POS_TOL = 2.0;
@@ -87,7 +87,6 @@ public class TeleEBlueJan extends OpMode {
     /* ================= PWM ================= */
     public static int PWM_MIN = 800;
     public static int PWM_MAX = 2200;
-
 
     public static double SHOOT_A = 0.56;
     public static double SHOOT_B = 0.32;
@@ -154,11 +153,13 @@ public class TeleEBlueJan extends OpMode {
         kickServo = hardwareMap.get(Servo.class, "kick_servo");
         adjustServo = hardwareMap.get(Servo.class, "adjust_servo");
 
-        if (spinServo instanceof PwmControl)
+// ✅ PWM RANGE RESTORED
+        if (spinServo instanceof PwmControl) {
             ((PwmControl) spinServo).setPwmRange(new PwmControl.PwmRange(PWM_MIN, PWM_MAX));
-        if (adjustServo instanceof PwmControl)
+        }
+        if (adjustServo instanceof PwmControl) {
             ((PwmControl) adjustServo).setPwmRange(new PwmControl.PwmRange(PWM_MIN, PWM_MAX));
-
+        }
 
         kickServo.setPosition(KICK_IDLE);
         spinServo.setPosition(INTAKE_0);
@@ -215,8 +216,8 @@ public class TeleEBlueJan extends OpMode {
         lastYDrive = gamepad1.y;
         lastBDrive = gamepad1.b;
 
-        /* ===== PRE-SPIN ONLY WHILE TRAVELING ===== */
-        if (navigating && mode != Mode.SHOOT) {
+        /* ===== PRE-SPIN (travel OR shooting) ===== */
+        if (navigating || mode == Mode.SHOOT) {
             setShooterRPM(activeRPM);
         }
 
@@ -224,18 +225,18 @@ public class TeleEBlueJan extends OpMode {
         if ((gamepad1.left_bumper || gamepad1.right_bumper) && navigating) {
             navigating = false;
             activeTarget = null;
-            setShooterRPM(0);
             follower.breakFollowing();
             follower.startTeleopDrive();
+// shooter shutdown handled by hold() when idle
         }
 
         /* ===== DRIVE ===== */
         if (navigating) {
             follower.update();
             if (arrived()) {
+// ✅ FIX: DO NOT KILL SHOOTER HERE
                 navigating = false;
                 activeTarget = null;
-                setShooterRPM(0);
                 follower.breakFollowing();
                 follower.startTeleopDrive();
             }
@@ -261,7 +262,6 @@ public class TeleEBlueJan extends OpMode {
             mode = Mode.SHOOT;
             shootState = ShootState.A;
             shootTimer.reset();
-            setShooterRPM(activeRPM);
         }
 
         /* ===== HOOD APPLY ===== */
@@ -272,11 +272,14 @@ public class TeleEBlueJan extends OpMode {
         /* ===== MODES ===== */
         switch (mode) {
             case INTAKE: runIntake(); break;
-            case SHOOT:  runShoot();  break;
-            default:     hold();      break;
+            case SHOOT: runShoot(); break;
+            default: hold(); break;
         }
 
+        telemetry.addData("Active RPM", activeRPM);
         telemetry.addData("Shooter RPM", getShooterRPM());
+        telemetry.addData("At Speed", shooterAtSpeed());
+        telemetry.addData("ShootState", shootState);
         telemetry.addData("Mode", mode);
         telemetry.update();
     }
@@ -312,7 +315,8 @@ public class TeleEBlueJan extends OpMode {
                 break;
 
             case A_SETTLE:
-                if (shootTimer.seconds() >= SETTLE_SEC && shooterAtSpeed()) {
+// more robust: don’t let first ball stall due to rpm check
+                if (shootTimer.seconds() >= SETTLE_SEC) {
                     kickServo.setPosition(KICK_ACTIVE);
                     shootTimer.reset();
                     shootState = ShootState.A_KICK;
@@ -397,7 +401,12 @@ public class TeleEBlueJan extends OpMode {
     private void hold() {
         intake.setPower(0);
         setCR(0, 0);
-        if (mode != Mode.SHOOT && !navigating) setShooterRPM(0);
+
+// ✅ only shut shooter down when actually idle
+        if (mode == Mode.IDLE && !navigating) {
+            setShooterRPM(0);
+        }
+
         spinServo.setPosition(INTAKE_0);
         kickServo.setPosition(KICK_IDLE);
     }
