@@ -27,13 +27,13 @@ public class RedAutoTest extends OpMode {
     private int pathState;
 
     private final Pose startPos = new Pose(111, 135, Math.toRadians(0));
-    private final Pose shootPos = new Pose(105.331136738056, 105.09390444810545, Math.toRadians(38));
+    private final Pose shootPos = new Pose(105.331136738056, 108.4, Math.toRadians(42));
 
-    private final Pose intakeRowOnePos = new Pose(100, 93, Math.toRadians(180));
-    private final Pose intakePickUpRowOnePos = new Pose(121, 93, Math.toRadians(180));
+    private final Pose intakeRowOnePos = new Pose(95, 93, Math.toRadians(180));
+    private final Pose intakePickUpRowOnePos = new Pose(117, 93, Math.toRadians(180));
 
-    private final Pose intakeRowTwoPos = new Pose(100, 67, Math.toRadians(180));
-    private final Pose intakePickUpRowTwoPos = new Pose(121, 67, Math.toRadians(180));
+    private final Pose intakeRowTwoPos = new Pose(100, 70, Math.toRadians(180));
+    private final Pose intakePickUpRowTwoPos = new Pose(117, 67, Math.toRadians(180));
 
     private PathChain moveOne, moveTwo, moveThree, moveFour;
     private PathChain moveFive, moveSix, moveSeven;
@@ -63,7 +63,7 @@ public class RedAutoTest extends OpMode {
 
     /* ================= SHOOTER ================= */
     public static double TICKS_PER_REV = 28.0;
-    public static double RPM = 2500;
+    public static double RPM = 2350;
     public static double RPM_TOL = 75;
     public static double HOOD_POS = 0.75;
 

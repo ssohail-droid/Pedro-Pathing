@@ -32,12 +32,13 @@ public class TeleBlueJanTEST extends OpMode {
 
     /* ================= DRIVE ================= */
     private Follower follower;
-    private final Pose startPose = new Pose(50, 9, Math.toRadians(90));
+    private final Pose startPose = new Pose(41, 111.05, Math.toRadians(140));
 
     public static Pose TARGET_A = new Pose(41.71, 111.05, Math.toRadians(140));
     public static Pose TARGET_B = new Pose(28.83, 122.81, Math.toRadians(140));
     public static Pose TARGET_C = new Pose(61.08, 14.38, Math.toRadians(112.5));
 
+    /* ===== PER-TARGET RPM + HOOD ===== */
     public static double RPM_A = 2500;
     public static double RPM_B = 2200;
     public static double RPM_C = 3500;
@@ -91,19 +92,23 @@ public class TeleBlueJanTEST extends OpMode {
     public static double SHOOT_B = 0.32;
     public static double SHOOT_C = 0.04;
 
+    /* ================= CR SHOOT ================= */
     public static double CR_A_L = 1.0, CR_A_R = -1.0;
     public static double CR_B_L = 1.0, CR_B_R = -1.0;
     public static double CR_C_L = 1.0, CR_C_R = -1.0;
 
+    /* ================= KICKER ================= */
     public static double KICK_IDLE = 1.0;
     public static double KICK_ACTIVE = 0.7;
     public static double SETTLE_SEC = 0.35;
     public static double KICK_MS = 1000;
     public static double POST_MS = 500;
 
+    /* ================= HOOD ================= */
     public static final double HOOD_MIN = 0.73;
     public static final double HOOD_MAX = 1.0;
 
+    /* ================= MODES ================= */
     private enum Mode { IDLE, INTAKE, SHOOT }
     private Mode mode = Mode.IDLE;
 
@@ -121,8 +126,8 @@ public class TeleBlueJanTEST extends OpMode {
     private final ElapsedTime shootTimer = new ElapsedTime();
 
     private boolean lastA = false, lastXShoot = false;
-    private boolean lastShare = false;
 
+    /* ================= INIT ================= */
     @Override
     public void init() {
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
@@ -148,10 +153,13 @@ public class TeleBlueJanTEST extends OpMode {
         kickServo = hardwareMap.get(Servo.class, "kick_servo");
         adjustServo = hardwareMap.get(Servo.class, "adjust_servo");
 
-        if (spinServo instanceof PwmControl)
+// ✅ PWM RANGE RESTORED
+        if (spinServo instanceof PwmControl) {
             ((PwmControl) spinServo).setPwmRange(new PwmControl.PwmRange(PWM_MIN, PWM_MAX));
-        if (adjustServo instanceof PwmControl)
+        }
+        if (adjustServo instanceof PwmControl) {
             ((PwmControl) adjustServo).setPwmRange(new PwmControl.PwmRange(PWM_MIN, PWM_MAX));
+        }
 
         kickServo.setPosition(KICK_IDLE);
         spinServo.setPosition(INTAKE_0);
@@ -161,18 +169,9 @@ public class TeleBlueJanTEST extends OpMode {
         follower.startTeleopDrive();
     }
 
+    /* ================= LOOP ================= */
     @Override
     public void loop() {
-
-        boolean sharePressed = gamepad2.share && !lastShare;
-        lastShare = gamepad2.share;
-
-        if (sharePressed) {
-            resetAllStates();
-            telemetry.addLine("RESET: ALL STATES CLEARED");
-            telemetry.update();
-            return;
-        }
 
         /* ===== TARGET SELECT ===== */
         boolean xPressed = gamepad1.x && !lastXDrive;
@@ -180,19 +179,34 @@ public class TeleBlueJanTEST extends OpMode {
         boolean bPressed = gamepad1.b && !lastBDrive;
 
         if (!navigating) {
-            if (xPressed) { activeTarget = TARGET_A; activeRPM = RPM_A; activeHood = HOOD_A; navigating = true; }
-            else if (yPressed) { activeTarget = TARGET_B; activeRPM = RPM_B; activeHood = HOOD_B; navigating = true; }
-            else if (bPressed) { activeTarget = TARGET_C; activeRPM = RPM_C; activeHood = HOOD_C; navigating = true; }
+            if (xPressed) {
+                activeTarget = TARGET_A;
+                activeRPM = RPM_A;
+                activeHood = HOOD_A;
+                navigating = true;
+            } else if (yPressed) {
+                activeTarget = TARGET_B;
+                activeRPM = RPM_B;
+                activeHood = HOOD_B;
+                navigating = true;
+            } else if (bPressed) {
+                activeTarget = TARGET_C;
+                activeRPM = RPM_C;
+                activeHood = HOOD_C;
+                navigating = true;
+            }
 
             if (navigating) {
                 follower.followPath(
                         follower.pathBuilder()
                                 .addPath(new BezierLine(
                                         new Point(follower.getPose()),
-                                        new Point(activeTarget)))
+                                        new Point(activeTarget)
+                                ))
                                 .setLinearHeadingInterpolation(
                                         follower.getPose().getHeading(),
-                                        activeTarget.getHeading())
+                                        activeTarget.getHeading()
+                                )
                                 .build()
                 );
             }
@@ -202,16 +216,27 @@ public class TeleBlueJanTEST extends OpMode {
         lastYDrive = gamepad1.y;
         lastBDrive = gamepad1.b;
 
-        if (navigating && mode != Mode.SHOOT) {
+        /* ===== PRE-SPIN (travel OR shooting) ===== */
+        if (navigating || mode == Mode.SHOOT) {
             setShooterRPM(activeRPM);
         }
 
+        /* ===== CANCEL ===== */
+        if ((gamepad1.left_bumper || gamepad1.right_bumper) && navigating) {
+            navigating = false;
+            activeTarget = null;
+            follower.breakFollowing();
+            follower.startTeleopDrive();
+// shooter shutdown handled by hold() when idle
+        }
+
+        /* ===== DRIVE ===== */
         if (navigating) {
             follower.update();
             if (arrived()) {
+// ✅ FIX: DO NOT KILL SHOOTER HERE
                 navigating = false;
                 activeTarget = null;
-                setShooterRPM(0);
                 follower.breakFollowing();
                 follower.startTeleopDrive();
             }
@@ -225,6 +250,7 @@ public class TeleBlueJanTEST extends OpMode {
             follower.update();
         }
 
+        /* ===== MODE INPUT ===== */
         boolean aPressed = gamepad2.dpad_down && !lastA;
         boolean xShootPressed = gamepad2.dpad_up && !lastXShoot;
         lastA = gamepad2.dpad_down;
@@ -236,43 +262,29 @@ public class TeleBlueJanTEST extends OpMode {
             mode = Mode.SHOOT;
             shootState = ShootState.A;
             shootTimer.reset();
-            setShooterRPM(activeRPM);
         }
 
+        /* ===== HOOD APPLY ===== */
         adjustServo.setPosition(
                 Math.max(HOOD_MIN, Math.min(HOOD_MAX, activeHood))
         );
 
+        /* ===== MODES ===== */
         switch (mode) {
             case INTAKE: runIntake(); break;
             case SHOOT: runShoot(); break;
             default: hold(); break;
         }
 
+        telemetry.addData("Active RPM", activeRPM);
         telemetry.addData("Shooter RPM", getShooterRPM());
+        telemetry.addData("At Speed", shooterAtSpeed());
+        telemetry.addData("ShootState", shootState);
         telemetry.addData("Mode", mode);
         telemetry.update();
     }
 
-    private void resetAllStates() {
-        mode = Mode.IDLE;
-        shootState = ShootState.A;
-
-        intake.setPower(0);
-        setCR(0, 0);
-        setShooterRPM(0);
-
-        ballCount = 0;
-        lastDetected = false;
-
-        shootTimer.reset();
-        detectTimer.reset();
-
-        spinServo.setPosition(INTAKE_0);
-        kickServo.setPosition(KICK_IDLE);
-        adjustServo.setPosition(activeHood);
-    }
-
+    /* ================= INTAKE ================= */
     private void runIntake() {
         intake.setPower(INTAKE_POWER);
         setCR(CR_INTAKE_POWER, CR_INTAKE_POWER);
@@ -290,6 +302,7 @@ public class TeleBlueJanTEST extends OpMode {
         );
     }
 
+    /* ================= SHOOT ================= */
     private void runShoot() {
         intake.setPower(0);
 
@@ -302,7 +315,8 @@ public class TeleBlueJanTEST extends OpMode {
                 break;
 
             case A_SETTLE:
-                if (shootTimer.seconds() >= SETTLE_SEC && shooterAtSpeed()) {
+// more robust: don’t let first ball stall due to rpm check
+                if (shootTimer.seconds() >= SETTLE_SEC) {
                     kickServo.setPosition(KICK_ACTIVE);
                     shootTimer.reset();
                     shootState = ShootState.A_KICK;
@@ -383,10 +397,16 @@ public class TeleBlueJanTEST extends OpMode {
         }
     }
 
+    /* ================= HELPERS ================= */
     private void hold() {
         intake.setPower(0);
         setCR(0, 0);
-        if (mode != Mode.SHOOT && !navigating) setShooterRPM(0);
+
+// ✅ only shut shooter down when actually idle
+        if (mode == Mode.IDLE && !navigating) {
+            setShooterRPM(0);
+        }
+
         spinServo.setPosition(INTAKE_0);
         kickServo.setPosition(KICK_IDLE);
     }

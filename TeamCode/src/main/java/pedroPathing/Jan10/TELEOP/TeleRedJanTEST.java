@@ -26,18 +26,19 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import pedroPathing.constants.FConstants;
 import pedroPathing.constants.LConstants;
 
-@TeleOp(name = "Tele Red Jan 10 TEST", group = "Main")
+@TeleOp(name = "Tele RED Jan 10 TEST", group = "Main")
 @Config
 public class TeleRedJanTEST extends OpMode {
 
     /* ================= DRIVE ================= */
     private Follower follower;
-    private final Pose startPose = new Pose(95, 9, Math.toRadians(90));
+    private final Pose startPose = new Pose(105.331136738056, 108.4, Math.toRadians(42));
 
-    public static Pose TARGET_A = new Pose(102.3, 111.05, Math.toRadians(45));
-    public static Pose TARGET_B = new Pose(114.2, 122.81, Math.toRadians(45));
+    public static Pose TARGET_A = new Pose(107.3, 106, Math.toRadians(42));
+    public static Pose TARGET_B = new Pose(105.331136738056, 108.4, Math.toRadians(42));
     public static Pose TARGET_C = new Pose(93.5, 14.38, Math.toRadians(71));
 
+    /* ===== PER-TARGET RPM + HOOD ===== */
     public static double RPM_A = 2500;
     public static double RPM_B = 2200;
     public static double RPM_C = 3500;
@@ -66,9 +67,9 @@ public class TeleRedJanTEST extends OpMode {
     private DistanceSensor distanceSensor;
 
     /* ================= INTAKE ================= */
-    public static double INTAKE_POWER = 0.4;
+    public static double INTAKE_POWER = 0.8;
     public static double CR_INTAKE_POWER = 1.0;
-    public static double DISTANCE_CM = 2.0;
+    public static double DISTANCE_CM = 3.0;
 
     /* ================= SHOOTER ================= */
     public static double TICKS_PER_REV = 28.0;
@@ -91,19 +92,23 @@ public class TeleRedJanTEST extends OpMode {
     public static double SHOOT_B = 0.32;
     public static double SHOOT_C = 0.04;
 
+    /* ================= CR SHOOT ================= */
     public static double CR_A_L = 1.0, CR_A_R = -1.0;
     public static double CR_B_L = 1.0, CR_B_R = -1.0;
     public static double CR_C_L = 1.0, CR_C_R = -1.0;
 
+    /* ================= KICKER ================= */
     public static double KICK_IDLE = 1.0;
     public static double KICK_ACTIVE = 0.7;
     public static double SETTLE_SEC = 0.35;
     public static double KICK_MS = 1000;
     public static double POST_MS = 500;
 
+    /* ================= HOOD ================= */
     public static final double HOOD_MIN = 0.73;
     public static final double HOOD_MAX = 1.0;
 
+    /* ================= MODES ================= */
     private enum Mode { IDLE, INTAKE, SHOOT }
     private Mode mode = Mode.IDLE;
 
@@ -121,8 +126,8 @@ public class TeleRedJanTEST extends OpMode {
     private final ElapsedTime shootTimer = new ElapsedTime();
 
     private boolean lastA = false, lastXShoot = false;
-    private boolean lastShare = false;
 
+    /* ================= INIT ================= */
     @Override
     public void init() {
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
@@ -148,10 +153,13 @@ public class TeleRedJanTEST extends OpMode {
         kickServo = hardwareMap.get(Servo.class, "kick_servo");
         adjustServo = hardwareMap.get(Servo.class, "adjust_servo");
 
-        if (spinServo instanceof PwmControl)
+// ✅ PWM RANGE RESTORED
+        if (spinServo instanceof PwmControl) {
             ((PwmControl) spinServo).setPwmRange(new PwmControl.PwmRange(PWM_MIN, PWM_MAX));
-        if (adjustServo instanceof PwmControl)
+        }
+        if (adjustServo instanceof PwmControl) {
             ((PwmControl) adjustServo).setPwmRange(new PwmControl.PwmRange(PWM_MIN, PWM_MAX));
+        }
 
         kickServo.setPosition(KICK_IDLE);
         spinServo.setPosition(INTAKE_0);
@@ -161,19 +169,9 @@ public class TeleRedJanTEST extends OpMode {
         follower.startTeleopDrive();
     }
 
+    /* ================= LOOP ================= */
     @Override
     public void loop() {
-
-        /* ===== HARD RESET (GAMEPAD2 SHARE) ===== */
-        boolean sharePressed = gamepad2.share && !lastShare;
-        lastShare = gamepad2.share;
-
-        if (sharePressed) {
-            resetAllStates();
-            telemetry.addLine("RESET: ALL STATES CLEARED");
-            telemetry.update();
-            return;
-        }
 
         /* ===== TARGET SELECT ===== */
         boolean xPressed = gamepad1.x && !lastXDrive;
@@ -181,19 +179,34 @@ public class TeleRedJanTEST extends OpMode {
         boolean bPressed = gamepad1.b && !lastBDrive;
 
         if (!navigating) {
-            if (xPressed) { activeTarget = TARGET_A; activeRPM = RPM_A; activeHood = HOOD_A; navigating = true; }
-            else if (yPressed) { activeTarget = TARGET_B; activeRPM = RPM_B; activeHood = HOOD_B; navigating = true; }
-            else if (bPressed) { activeTarget = TARGET_C; activeRPM = RPM_C; activeHood = HOOD_C; navigating = true; }
+            if (xPressed) {
+                activeTarget = TARGET_A;
+                activeRPM = RPM_A;
+                activeHood = HOOD_A;
+                navigating = true;
+            } else if (yPressed) {
+                activeTarget = TARGET_B;
+                activeRPM = RPM_B;
+                activeHood = HOOD_B;
+                navigating = true;
+            } else if (bPressed) {
+                activeTarget = TARGET_C;
+                activeRPM = RPM_C;
+                activeHood = HOOD_C;
+                navigating = true;
+            }
 
             if (navigating) {
                 follower.followPath(
                         follower.pathBuilder()
                                 .addPath(new BezierLine(
                                         new Point(follower.getPose()),
-                                        new Point(activeTarget)))
+                                        new Point(activeTarget)
+                                ))
                                 .setLinearHeadingInterpolation(
                                         follower.getPose().getHeading(),
-                                        activeTarget.getHeading())
+                                        activeTarget.getHeading()
+                                )
                                 .build()
                 );
             }
@@ -203,16 +216,27 @@ public class TeleRedJanTEST extends OpMode {
         lastYDrive = gamepad1.y;
         lastBDrive = gamepad1.b;
 
-        if (navigating && mode != Mode.SHOOT) {
+        /* ===== PRE-SPIN (travel OR shooting) ===== */
+        if (navigating || mode == Mode.SHOOT) {
             setShooterRPM(activeRPM);
         }
 
+        /* ===== CANCEL ===== */
+        if ((gamepad1.left_bumper || gamepad1.right_bumper) && navigating) {
+            navigating = false;
+            activeTarget = null;
+            follower.breakFollowing();
+            follower.startTeleopDrive();
+// shooter shutdown handled by hold() when idle
+        }
+
+        /* ===== DRIVE ===== */
         if (navigating) {
             follower.update();
             if (arrived()) {
+// ✅ FIX: DO NOT KILL SHOOTER HERE
                 navigating = false;
                 activeTarget = null;
-                setShooterRPM(0);
                 follower.breakFollowing();
                 follower.startTeleopDrive();
             }
@@ -226,10 +250,11 @@ public class TeleRedJanTEST extends OpMode {
             follower.update();
         }
 
-        boolean aPressed = gamepad1.dpad_down && !lastA;
-        boolean xShootPressed = gamepad1.dpad_up && !lastXShoot;
-        lastA = gamepad1.dpad_down;
-        lastXShoot = gamepad1.dpad_up;
+        /* ===== MODE INPUT ===== */
+        boolean aPressed = gamepad2.dpad_down && !lastA;
+        boolean xShootPressed = gamepad2.dpad_up && !lastXShoot;
+        lastA = gamepad2.dpad_down;
+        lastXShoot = gamepad2.dpad_up;
 
         if (aPressed) mode = Mode.INTAKE;
 
@@ -237,42 +262,26 @@ public class TeleRedJanTEST extends OpMode {
             mode = Mode.SHOOT;
             shootState = ShootState.A;
             shootTimer.reset();
-            setShooterRPM(activeRPM);
         }
 
+        /* ===== HOOD APPLY ===== */
         adjustServo.setPosition(
                 Math.max(HOOD_MIN, Math.min(HOOD_MAX, activeHood))
         );
 
+        /* ===== MODES ===== */
         switch (mode) {
             case INTAKE: runIntake(); break;
             case SHOOT: runShoot(); break;
             default: hold(); break;
         }
 
+        telemetry.addData("Active RPM", activeRPM);
         telemetry.addData("Shooter RPM", getShooterRPM());
+        telemetry.addData("At Speed", shooterAtSpeed());
+        telemetry.addData("ShootState", shootState);
         telemetry.addData("Mode", mode);
         telemetry.update();
-    }
-
-    /* ================= RESET ================= */
-    private void resetAllStates() {
-        mode = Mode.IDLE;
-        shootState = ShootState.A;
-
-        intake.setPower(0);
-        setCR(0, 0);
-        setShooterRPM(0);
-
-        ballCount = 0;
-        lastDetected = false;
-
-        shootTimer.reset();
-        detectTimer.reset();
-
-        spinServo.setPosition(INTAKE_0);
-        kickServo.setPosition(KICK_IDLE);
-        adjustServo.setPosition(activeHood);
     }
 
     /* ================= INTAKE ================= */
@@ -306,7 +315,8 @@ public class TeleRedJanTEST extends OpMode {
                 break;
 
             case A_SETTLE:
-                if (shootTimer.seconds() >= SETTLE_SEC && shooterAtSpeed()) {
+// more robust: don’t let first ball stall due to rpm check
+                if (shootTimer.seconds() >= SETTLE_SEC) {
                     kickServo.setPosition(KICK_ACTIVE);
                     shootTimer.reset();
                     shootState = ShootState.A_KICK;
@@ -391,7 +401,12 @@ public class TeleRedJanTEST extends OpMode {
     private void hold() {
         intake.setPower(0);
         setCR(0, 0);
-        if (mode != Mode.SHOOT && !navigating) setShooterRPM(0);
+
+// ✅ only shut shooter down when actually idle
+        if (mode == Mode.IDLE && !navigating) {
+            setShooterRPM(0);
+        }
+
         spinServo.setPosition(INTAKE_0);
         kickServo.setPosition(KICK_IDLE);
     }

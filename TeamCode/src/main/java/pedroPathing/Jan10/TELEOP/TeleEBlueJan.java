@@ -26,9 +26,9 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import pedroPathing.constants.FConstants;
 import pedroPathing.constants.LConstants;
 
-@TeleOp(name = "Tele Blue Jan 10", group = "Main")
+//@TeleOp(name = "Tele Blue Jan 10", group = "Main")
 @Config
-public class TeleBlueJan extends OpMode {
+public class TeleEBlueJan extends OpMode {
 
     /* ================= DRIVE ================= */
     private Follower follower;
