@@ -8,7 +8,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.PwmControl;
 import com.qualcomm.robotcore.hardware.Servo;
 
-//@TeleOp(name = "Spin Servo Dashboard Tuner", group = "Test")
+@TeleOp(name = "Spin Servo Dashboard Tuner", group = "Test")
 @Config
 public class SpinServoDashboard extends OpMode {
 
