@@ -80,17 +80,17 @@ public class TeleBlueJan extends OpMode {
     public static double RPM_TOLERANCE = 75;
 
     /* ================= SPIN POSITIONS ================= */
-    public static double INTAKE_0 = 0.18;
-    public static double INTAKE_1 = 0.46;
-    public static double INTAKE_2 = 0.63;
+    public static double INTAKE_0 = 0.145;
+    public static double INTAKE_1 = 0.41;
+    public static double INTAKE_2 = 0.7;
 
     /* ================= PWM ================= */
     public static int PWM_MIN = 800;
     public static int PWM_MAX = 2200;
 
     public static double SHOOT_A = 0.56;
-    public static double SHOOT_B = 0.32;
-    public static double SHOOT_C = 0.04;
+    public static double SHOOT_B = 0.28;
+    public static double SHOOT_C = 0.00;
 
     /* ================= CR SHOOT ================= */
     public static double CR_A_L = 1.0, CR_A_R = -1.0;
