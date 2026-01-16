@@ -233,7 +233,7 @@ public class BlueAutoPatterns extends OpMode {
     /* ================= HARDWARE ================= */
     private DcMotorEx intake, shooter;
     private CRServo crLeft, crRight;
-    private Servo spinServo, kickServo, adjustServo;
+    private Servo spinServo, kickServo, adjustServo, camServo;
     private DistanceSensor distanceSensor;
 
     /* ================= PWM ================= */
@@ -469,6 +469,7 @@ public class BlueAutoPatterns extends OpMode {
         spinServo = hardwareMap.get(Servo.class, "spin");
         kickServo = hardwareMap.get(Servo.class, "kick_servo");
         adjustServo = hardwareMap.get(Servo.class, "adjust_servo");
+        camServo = hardwareMap.get(Servo.class, "camServo");
 
         if (spinServo instanceof PwmControl)
             ((PwmControl) spinServo).setPwmRange(new PwmControl.PwmRange(PWM_MIN, PWM_MAX));
@@ -484,6 +485,8 @@ public class BlueAutoPatterns extends OpMode {
         // Start safe
         setCR(0, 0);
         setShooterRPM(0);
+        camServo.setPosition(0.2);
+
     }
 
     @Override
