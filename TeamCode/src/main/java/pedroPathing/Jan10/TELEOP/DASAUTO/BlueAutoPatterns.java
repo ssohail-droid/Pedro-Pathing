@@ -18,7 +18,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import pedroPathing.constants.FConstants;
 import pedroPathing.constants.LConstants;
 
-@Autonomous(name = "Blue Auto (Patterns + CR Shoot)", group = "Main")
+@Autonomous(name = "lue Auto (Patterns + CR Shoot)", group = "Main")
 public class BlueAutoPatterns extends OpMode {
 
     /* =========================================================
@@ -31,7 +31,7 @@ public class BlueAutoPatterns extends OpMode {
     /** Pattern shot orders (per phase) */
     // Pattern 0: Safe baseline
     private static final String P0_PRELOAD = "ABC";
-    private static final String P0_ROW1    = "BAC";
+    private static final String P0_ROW1    = "ACB";
     private static final String P0_ROW2    = "ACB";
 
     // Pattern 1: Aggressive / center-first example
@@ -264,7 +264,7 @@ public class BlueAutoPatterns extends OpMode {
     public static double KICK_ACTIVE = 0.7;
     public static double SETTLE_SEC = 0.35;
     public static double KICK_MS = 500;
-    public static double POST_MS = 500;
+    public static double POST_MS = 700;
 
     /* ================= STATE ================= */
     private enum Mode { IDLE, SHOOT }

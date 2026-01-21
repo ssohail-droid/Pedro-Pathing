@@ -26,7 +26,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import pedroPathing.constants.FConstants;
 import pedroPathing.constants.LConstants;
 
-@TeleOp(name = "TELE BLUE BACK", group = "Main")
+@TeleOp(name = "TELE BLUE BACK(V2)", group = "Main")
 @Config
 public class TeleBlueJan extends OpMode {
 
@@ -38,8 +38,7 @@ public class TeleBlueJan extends OpMode {
     public static Pose TARGET_B = new Pose(28.83, 122.81, Math.toRadians(140));
     public static Pose TARGET_C = new Pose(61.08, 14.38, Math.toRadians(112.5));
 
-    /* ===== PER-TARGET RPM + HOOD ===== */
-    public static double RPM_A = 2500;
+    public static double RPM_A = 2350;
     public static double RPM_B = 2200;
     public static double RPM_C = 3500;
 
@@ -54,11 +53,18 @@ public class TeleBlueJan extends OpMode {
     private double activeHood = HOOD_A;
 
     public static double POS_TOL = 2.0;
-    public static double HEAD_TOL_DEG = 5.0;
+    public static double HEAD_TOL_DEG = 0.01;
 
     private boolean lastXDrive = false;
     private boolean lastYDrive = false;
     private boolean lastBDrive = false;
+
+    /* ================= SLOW MODE ================= */
+    private boolean slowMode = false;
+    private boolean lastSlowToggle = false;
+
+    public static double SLOW_MULT = 0.35;
+    public static double TRIGGER_MIN_MULT = 0.25;
 
     /* ================= HARDWARE ================= */
     private DcMotorEx intake, shooter;
@@ -153,7 +159,6 @@ public class TeleBlueJan extends OpMode {
         kickServo = hardwareMap.get(Servo.class, "kick_servo");
         adjustServo = hardwareMap.get(Servo.class, "adjust_servo");
 
-// ✅ PWM RANGE RESTORED
         if (spinServo instanceof PwmControl) {
             ((PwmControl) spinServo).setPwmRange(new PwmControl.PwmRange(PWM_MIN, PWM_MAX));
         }
@@ -172,6 +177,11 @@ public class TeleBlueJan extends OpMode {
     /* ================= LOOP ================= */
     @Override
     public void loop() {
+
+        /* ===== SLOW MODE TOGGLE ===== */
+        boolean slowTogglePressed = gamepad1.a && !lastSlowToggle;
+        if (slowTogglePressed) slowMode = !slowMode;
+        lastSlowToggle = gamepad1.a;
 
         /* ===== TARGET SELECT ===== */
         boolean xPressed = gamepad1.x && !lastXDrive;
@@ -216,41 +226,42 @@ public class TeleBlueJan extends OpMode {
         lastYDrive = gamepad1.y;
         lastBDrive = gamepad1.b;
 
-        /* ===== PRE-SPIN (travel OR shooting) ===== */
         if (navigating || mode == Mode.SHOOT) {
             setShooterRPM(activeRPM);
         }
 
-        /* ===== CANCEL ===== */
         if ((gamepad1.left_bumper || gamepad1.right_bumper) && navigating) {
             navigating = false;
             activeTarget = null;
             follower.breakFollowing();
             follower.startTeleopDrive();
-// shooter shutdown handled by hold() when idle
         }
 
-        /* ===== DRIVE ===== */
         if (navigating) {
             follower.update();
             if (arrived()) {
-// ✅ FIX: DO NOT KILL SHOOTER HERE
                 navigating = false;
                 activeTarget = null;
                 follower.breakFollowing();
                 follower.startTeleopDrive();
             }
         } else {
+            double trigger = gamepad1.right_trigger;
+            double triggerMult = 1.0 - trigger * (1.0 - TRIGGER_MIN_MULT);
+
+            double finalMult = slowMode
+                    ? Math.min(SLOW_MULT, triggerMult)
+                    : triggerMult;
+
             follower.setTeleOpMovementVectors(
-                    gamepad1.left_stick_y,
-                    gamepad1.left_stick_x,
-                    -gamepad1.right_stick_x,
+                    gamepad1.left_stick_y * finalMult,
+                    gamepad1.left_stick_x * finalMult,
+                    -gamepad1.right_stick_x * finalMult,
                     false
             );
             follower.update();
         }
 
-        /* ===== MODE INPUT ===== */
         boolean aPressed = gamepad2.dpad_down && !lastA;
         boolean xShootPressed = gamepad2.dpad_up && !lastXShoot;
         lastA = gamepad2.dpad_down;
@@ -264,22 +275,17 @@ public class TeleBlueJan extends OpMode {
             shootTimer.reset();
         }
 
-        /* ===== HOOD APPLY ===== */
         adjustServo.setPosition(
                 Math.max(HOOD_MIN, Math.min(HOOD_MAX, activeHood))
         );
 
-        /* ===== MODES ===== */
         switch (mode) {
             case INTAKE: runIntake(); break;
             case SHOOT: runShoot(); break;
             default: hold(); break;
         }
 
-        telemetry.addData("Active RPM", activeRPM);
-        telemetry.addData("Shooter RPM", getShooterRPM());
-        telemetry.addData("At Speed", shooterAtSpeed());
-        telemetry.addData("ShootState", shootState);
+        telemetry.addData("Slow Mode", slowMode ? "ON" : "OFF");
         telemetry.addData("Mode", mode);
         telemetry.update();
     }
@@ -315,7 +321,6 @@ public class TeleBlueJan extends OpMode {
                 break;
 
             case A_SETTLE:
-// more robust: don’t let first ball stall due to rpm check
                 if (shootTimer.seconds() >= SETTLE_SEC) {
                     kickServo.setPosition(KICK_ACTIVE);
                     shootTimer.reset();
@@ -402,7 +407,6 @@ public class TeleBlueJan extends OpMode {
         intake.setPower(0);
         setCR(0, 0);
 
-// ✅ only shut shooter down when actually idle
         if (mode == Mode.IDLE && !navigating) {
             setShooterRPM(0);
         }
