@@ -35,7 +35,7 @@ public class BlueAutoTeest extends OpMode {
     private final Pose intakePickUpRowOnePos = new Pose(22, 78, Math.toRadians(0));
 
     private final Pose intakeRowTwoPos = new Pose(52, 55, Math.toRadians(0));
-    private final Pose intakePickUpRowTwoPos = new Pose(24.5 , 55, Math.toRadians(0));
+    private final Pose intakePickUpRowTwoPos = new Pose(27 , 55, Math.toRadians(0));
 
     private PathChain moveOne, moveTwo, moveThree, moveFour;
     private PathChain moveFive, moveSix, moveSeven;
@@ -51,7 +51,7 @@ public class BlueAutoTeest extends OpMode {
     public static int PWM_MAX = 2200;
 
     /* ================= INTAKE ================= */
-    public static double INTAKE_POWER = 0.8;
+    public static double INTAKE_POWER = 0.9;
     public static double CR_INTAKE_POWER = 1.0;
     public static double DISTANCE_CM = 2.0;
 
@@ -65,7 +65,7 @@ public class BlueAutoTeest extends OpMode {
 
     /* ================= SHOOTER ================= */
     public static double TICKS_PER_REV = 28.0;
-    public static double RPM = 2390;
+    public static double RPM = 2300;
     public static double RPM_TOL = 75;
     public static double HOOD_POS = 0.75;
 
@@ -94,24 +94,24 @@ public class BlueAutoTeest extends OpMode {
     /* ================= PER-ROUND CONFIG ================= */
 
     // ---------- PRELOAD ----------
-    public static String PRE_SEQ = "ABC";
-    public static double PRE_MOVE = 0.18;
-    public static double PRE_DAMP_A = 0.30, PRE_DAMP_B = 0.30, PRE_DAMP_C = 0.30;
-    public static double PRE_SET_A = 0.35, PRE_SET_B = 0.35, PRE_SET_C = 0.35;
+    public static String PRE_SEQ = "ACB";
+    public static double PRE_MOVE = 0.10;
+    public static double PRE_DAMP_A = 0.25, PRE_DAMP_B = 0.25, PRE_DAMP_C = 0.25;
+    public static double PRE_SET_A = 0.25, PRE_SET_B = 0.25, PRE_SET_C = 0.25;
     public static double PRE_CR_L = 1.0, PRE_CR_R = -1.0;
 
     // ---------- ROW 1 ----------
-    public static String R1_SEQ = "ACB";
-    public static double R1_MOVE = 0.22;
-    public static double R1_DAMP_A = 0.45, R1_DAMP_B = 0.30, R1_DAMP_C = 0.30;
-    public static double R1_SET_A = 0.45, R1_SET_B = 0.35, R1_SET_C = 0.35;
+    public static String R1_SEQ = "ABC";
+    public static double R1_MOVE = 0.10;
+    public static double R1_DAMP_A = 0.25, R1_DAMP_B = 0.25, R1_DAMP_C = 0.25;
+    public static double R1_SET_A = 0.25, R1_SET_B = 0.25, R1_SET_C = 0.25;
     public static double R1_CR_L = 1.0, R1_CR_R = -1.0;
 
     // ---------- ROW 2 ----------
-    public static String R2_SEQ = "ABC";
-    public static double R2_MOVE = 0.20;
-    public static double R2_DAMP_A = 0.30, R2_DAMP_B = 0.30, R2_DAMP_C = 0.30;
-    public static double R2_SET_A = 0.35, R2_SET_B = 0.35, R2_SET_C = 0.35;
+    public static String R2_SEQ = "ACB";
+    public static double R2_MOVE = 0.10;
+    public static double R2_DAMP_A = 0.20, R2_DAMP_B = 0.20, R2_DAMP_C = 0.20;
+    public static double R2_SET_A = 0.20, R2_SET_B = 0.20, R2_SET_C = 0.20;
     public static double R2_CR_L = 1.0, R2_CR_R = -1.0;
 
     /* ================= PATHS ================= */
