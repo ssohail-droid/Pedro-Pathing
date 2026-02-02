@@ -13,7 +13,7 @@ import java.util.List;
 import org.firstinspires.ftc.robotcore.external.JavaUtil;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
 
-@TeleOp(name = "Limelight → Shoot Pattern Select", group = "Test")
+//@TeleOp(name = "Limelight → Shoot Pattern Select", group = "Test")
 public class LimelightPatternSelect extends LinearOpMode {
 
     private Limelight3A limelight;

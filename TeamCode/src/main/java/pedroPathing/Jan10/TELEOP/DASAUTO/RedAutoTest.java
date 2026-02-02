@@ -3,6 +3,7 @@ package pedroPathing.Jan10.TELEOP.DASAUTO;
 import com.pedropathing.follower.Follower;
 import com.pedropathing.localization.Pose;
 import com.pedropathing.pathgen.BezierLine;
+import com.pedropathing.pathgen.BezierCurve;
 import com.pedropathing.pathgen.PathChain;
 import com.pedropathing.pathgen.Point;
 import com.pedropathing.util.Constants;
@@ -18,7 +19,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import pedroPathing.constants.FConstants;
 import pedroPathing.constants.LConstants;
 
-@Autonomous(name = "Red Auto", group = "Main")
+@Autonomous(name = "Red Auto v2", group = "Main")
 public class RedAutoTest extends OpMode {
 
     /* ================= DRIVE ================= */
@@ -30,10 +31,10 @@ public class RedAutoTest extends OpMode {
     private final Pose shootPos = new Pose(105.331136738056, 108.4, Math.toRadians(42));
 
     private final Pose intakeRowOnePos = new Pose(95, 93, Math.toRadians(180));
-    private final Pose intakePickUpRowOnePos = new Pose(117, 93, Math.toRadians(180));
+    private final Pose intakePickUpRowOnePos = new Pose(125, 93, Math.toRadians(180));
 
     private final Pose intakeRowTwoPos = new Pose(100, 70, Math.toRadians(180));
-    private final Pose intakePickUpRowTwoPos = new Pose(117, 67, Math.toRadians(180));
+    private final Pose intakePickUpRowTwoPos = new Pose(131, 67, Math.toRadians(180));
 
     private PathChain moveOne, moveTwo, moveThree, moveFour;
     private PathChain moveFive, moveSix, moveSeven;
@@ -129,8 +130,16 @@ public class RedAutoTest extends OpMode {
                 .setLinearHeadingInterpolation(intakeRowTwoPos.getHeading(), intakePickUpRowTwoPos.getHeading())
                 .build();
 
+
+
+        Point moveSevenControl = new Point(100.929, 58.8972); // <-- Tune this point
+
         moveSeven = follower.pathBuilder()
-                .addPath(new BezierLine(new Point(intakePickUpRowTwoPos), new Point(shootPos)))
+                .addPath(new BezierCurve(
+                        new Point(intakePickUpRowTwoPos),
+                        moveSevenControl,
+                        new Point(shootPos)
+                ))
                 .setLinearHeadingInterpolation(intakePickUpRowTwoPos.getHeading(), shootPos.getHeading())
                 .build();
     }
@@ -140,7 +149,7 @@ public class RedAutoTest extends OpMode {
 
         switch (pathState) {
 
-            case 0: // Drive to shoot
+            case 0:
                 prespin = true;
                 setShooterRPM(RPM);
                 adjustServo.setPosition(HOOD_POS);
@@ -148,7 +157,7 @@ public class RedAutoTest extends OpMode {
                 setPathState(1);
                 break;
 
-            case 1: // Shoot preload
+            case 1:
                 if (!follower.isBusy()) {
                     prespin = false;
                     startShoot(RPM, HOOD_POS);
@@ -156,7 +165,7 @@ public class RedAutoTest extends OpMode {
                 }
                 break;
 
-            case 2: // After preload shot → Row 1
+            case 2:
                 updateMechanisms();
                 if (mode == Mode.IDLE) {
                     ballCount = 0;
@@ -165,17 +174,17 @@ public class RedAutoTest extends OpMode {
                 }
                 break;
 
-            case 3: // Start Row 1 intake
+            case 3:
                 if (!follower.isBusy()) {
                     prespin = true;
                     setShooterRPM(RPM);
-                    follower.setMaxPower(0.2);
+                    follower.setMaxPower(0.6);
                     follower.followPath(moveThree);
                     setPathState(4);
                 }
                 break;
 
-            case 4: // Intake Row 1
+            case 4:
                 prespin = true;
                 setShooterRPM(RPM);
                 runIntake();
@@ -188,7 +197,7 @@ public class RedAutoTest extends OpMode {
                 }
                 break;
 
-            case 5: // Shoot Row 1
+            case 5:
                 if (!follower.isBusy()) {
                     prespin = false;
                     startShoot(RPM, HOOD_POS);
@@ -196,7 +205,7 @@ public class RedAutoTest extends OpMode {
                 }
                 break;
 
-            case 6: // After Row 1 shot → Row 2
+            case 6:
                 updateMechanisms();
                 if (mode == Mode.IDLE) {
                     ballCount = 0;
@@ -205,17 +214,17 @@ public class RedAutoTest extends OpMode {
                 }
                 break;
 
-            case 7: // Start Row 2 intake
+            case 7:
                 if (!follower.isBusy()) {
                     prespin = true;
                     setShooterRPM(RPM);
-                    follower.setMaxPower(0.2);
+                    follower.setMaxPower(0.6);
                     follower.followPath(moveSix);
                     setPathState(8);
                 }
                 break;
 
-            case 8: // Intake Row 2
+            case 8:
                 prespin = true;
                 setShooterRPM(RPM);
                 runIntake();
@@ -228,7 +237,7 @@ public class RedAutoTest extends OpMode {
                 }
                 break;
 
-            case 9: // Shoot Row 2
+            case 9:
                 if (!follower.isBusy()) {
                     prespin = false;
                     startShoot(RPM, HOOD_POS);
@@ -236,7 +245,7 @@ public class RedAutoTest extends OpMode {
                 }
                 break;
 
-            case 10: // End
+            case 10:
                 updateMechanisms();
                 if (mode == Mode.IDLE) {
                     setPathState(-1);
@@ -253,6 +262,7 @@ public class RedAutoTest extends OpMode {
     /* ================= INIT ================= */
     @Override
     public void init() {
+
         pathTimer = new Timer();
 
         Constants.setConstants(FConstants.class, LConstants.class);
@@ -280,6 +290,7 @@ public class RedAutoTest extends OpMode {
 
         if (spinServo instanceof PwmControl)
             ((PwmControl) spinServo).setPwmRange(new PwmControl.PwmRange(PWM_MIN, PWM_MAX));
+
         if (adjustServo instanceof PwmControl)
             ((PwmControl) adjustServo).setPwmRange(new PwmControl.PwmRange(PWM_MIN, PWM_MAX));
 
@@ -297,6 +308,7 @@ public class RedAutoTest extends OpMode {
 
     @Override
     public void loop() {
+
         follower.update();
         autonomousPathUpdate();
 
@@ -355,6 +367,7 @@ public class RedAutoTest extends OpMode {
     /* ================= SHOOT FSM ================= */
 
     private void runShoot() {
+
         switch (shootState) {
 
             case A:
