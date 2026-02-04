@@ -1,5 +1,7 @@
 package pedroPathing.Jan10.TELEOP.DASAUTO;
 
+//Lock This Code NO CHANGE EVER
+
 import com.pedropathing.follower.Follower;
 import com.pedropathing.localization.Pose;
 import com.pedropathing.pathgen.BezierLine;
@@ -19,7 +21,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import pedroPathing.constants.FConstants;
 import pedroPathing.constants.LConstants;
 
-@Autonomous(name = "Red Auto v2", group = "Main")
+@Autonomous(name = "Red Auto New", group = "Main")
 public class RedAutoTest extends OpMode {
 
     /* ================= DRIVE ================= */
@@ -36,8 +38,10 @@ public class RedAutoTest extends OpMode {
     private final Pose intakeRowTwoPos = new Pose(100, 70, Math.toRadians(180));
     private final Pose intakePickUpRowTwoPos = new Pose(131, 67, Math.toRadians(180));
 
+    private final Pose leave = new Pose(96, 126.5, Math.toRadians(0));
+
     private PathChain moveOne, moveTwo, moveThree, moveFour;
-    private PathChain moveFive, moveSix, moveSeven;
+    private PathChain moveFive, moveSix, moveSeven, moveLeave;
 
     /* ================= HARDWARE ================= */
     private DcMotorEx intake, shooter;
@@ -84,7 +88,7 @@ public class RedAutoTest extends OpMode {
     public static double POST_MS = 500;
 
     /* ================= STATE ================= */
-    enum Mode { IDLE, SHOOT }
+    private enum Mode { IDLE, SHOOT }
     private Mode mode = Mode.IDLE;
 
     private enum ShootState {
@@ -142,6 +146,13 @@ public class RedAutoTest extends OpMode {
                 ))
                 .setLinearHeadingInterpolation(intakePickUpRowTwoPos.getHeading(), shootPos.getHeading())
                 .build();
+
+        moveLeave = follower.pathBuilder()
+                .addPath(new BezierLine(new Point(shootPos), new Point(leave)))
+                .setLinearHeadingInterpolation(shootPos.getHeading(), leave.getHeading())
+                .build();
+
+
     }
 
     /* ================= AUTO FSM ================= */
@@ -248,7 +259,21 @@ public class RedAutoTest extends OpMode {
             case 10:
                 updateMechanisms();
                 if (mode == Mode.IDLE) {
+                    follower.followPath(moveLeave);
+                    setPathState(11);
+                }
+                break;
+
+            case 11:
+                if(!follower.isBusy()){
+                    stopIntake();
+                    setCR(0,0);
+                    setShooterRPM(0);
+
+                    spinServo.setPosition(INTAKE_0);
+                    kickServo.setPosition(KICK_IDLE);
                     setPathState(-1);
+
                 }
                 break;
         }

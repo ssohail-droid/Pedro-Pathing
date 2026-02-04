@@ -11,67 +11,16 @@ import com.pedropathing.util.Timer;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
-import com.qualcomm.robotcore.hardware.CRServo;
-import com.qualcomm.robotcore.hardware.DcMotorEx;
-import com.qualcomm.robotcore.hardware.DistanceSensor;
-import com.qualcomm.robotcore.hardware.Servo;
-import com.qualcomm.robotcore.util.ElapsedTime;
 
 import pedroPathing.constants.FConstants;
 import pedroPathing.constants.LConstants;
 
-@Autonomous(name = "RedAutoJoint", group = "Examples")
-public class RedAutoJoint extends OpMode {
+// plz disable later B4 Comp
+@Autonomous(name = "Red Auto Joint Pathing", group = "Examples")
+public class RedAutoJointPathing extends OpMode {
 
     private Follower follower;
     private Timer pathTimer, opmodeTimer;
-
-    /* ================= HARDWARE ================= */
-    private DcMotorEx intake, shooter;
-    private CRServo crLeft, crRight;
-    private Servo spinServo, kickServo, adjustServo;
-    private DistanceSensor distanceSensor;
-
-    /* ================= PWM ================= */
-    public static int PWM_MIN = 800;
-    public static int PWM_MAX = 2200;
-
-    /* ================= INTAKE ================= */
-    public static double INTAKE_POWER = 0.8;
-    public static double CR_INTAKE_POWER = 1.0;
-    public static double DISTANCE_CM = 2.0;
-
-    public static double INTAKE_0 = 0.145;
-    public static double INTAKE_1 = 0.41;
-    public static double INTAKE_2 = 0.7;
-
-    private int ballCount = 0;
-    private boolean lastDetected = false;
-    private final ElapsedTime detectTimer = new ElapsedTime();
-
-    /* ================= SHOOTER ================= */
-    public static double TICKS_PER_REV = 28.0;
-    public static double RPM = 2350;
-    public static double RPM_TOL = 75;
-    public static double HOOD_POS = 0.75;
-
-    public static double SHOOT_A = 0.56;
-    public static double SHOOT_B = 0.28;
-    public static double SHOOT_C = 0.00;
-
-    /* ================= CR SHOOT ================= */
-    public static double CR_L = 1.0;
-    public static double CR_R = -1.0;
-
-    /* ================= KICKER ================= */
-    public static double KICK_IDLE = 1.0;
-    public static double KICK_ACTIVE = 0.7;
-    public static double SETTLE_SEC = 0.35;
-    public static double KICK_MS = 500;
-    public static double POST_MS = 500;
-
-    private enum Mode { IDLE, SHOOT }
-    private RedAutoTest.Mode mode = RedAutoTest.Mode.IDLE;
 
     /* ================= ENUM STATE MACHINE ================= */
 
@@ -100,7 +49,7 @@ public class RedAutoJoint extends OpMode {
     private final Pose intakeRowOnePos = new Pose(95, 93, Math.toRadians(180));
     private final Pose intakePickUpRowOnePos = new Pose(125, 93, Math.toRadians(180));
 
-    private final Pose openGate = new Pose(126.02337075207845, 90, Math.toRadians(180));
+    private final Pose openGate = new Pose(127.02337075207845, 90, Math.toRadians(180));
     private final Pose openGateControlPoint = new Pose(100, 78.03255813953488);
 
     private final Pose intakeRowTwoPos = new Pose(100, 70, Math.toRadians(180));

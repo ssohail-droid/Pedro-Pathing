@@ -2,6 +2,7 @@ package pedroPathing.Jan10.TELEOP.DASAUTO;
 
 import com.pedropathing.follower.Follower;
 import com.pedropathing.localization.Pose;
+import com.pedropathing.pathgen.BezierCurve;
 import com.pedropathing.pathgen.BezierLine;
 import com.pedropathing.pathgen.PathChain;
 import com.pedropathing.pathgen.Point;
@@ -18,29 +19,130 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import pedroPathing.constants.FConstants;
 import pedroPathing.constants.LConstants;
 
-@Autonomous(name = "Blue Auto (Legacy)", group = "Main")
-public class BlueAutoTest extends OpMode {
+@Autonomous(name = "RedAutoJointV3_FULL", group = "Main")
+public class RedAutoJointV3_FULL extends OpMode {
 
     /* ================= DRIVE ================= */
     private Follower follower;
     private Timer pathTimer;
-    private int pathState;
 
-    private final Pose startPos = new Pose(32, 135, Math.toRadians(180));
-    private final Pose shootPos = new Pose(41, 111.05, Math.toRadians(140));
+    /* ================= SPEED CONTROL ================= */
+    public static double SPEED_TO_SHOOT       = 1.00;
 
-    private final Pose intakeRowOnePos = new Pose(52, 78, Math.toRadians(0));
-    /// ///////////////////////////////////////////////^^from ball
-    private final Pose intakePickUpRowOnePos = new Pose(22, 78, Math.toRadians(0));
-    /// /////////////////////////////////////////////////////^^from gg
+    public static double SPEED_TO_ROW1        = 1.00;
+    public static double SPEED_PICKUP_ROW1    = 0.60;
 
-    private final Pose intakeRowTwoPos = new Pose(52, 55, Math.toRadians(0));
-    /// ///////////////////////////////////////////////^^from ball
-    private final Pose intakePickUpRowTwoPos = new Pose(24.5 , 55, Math.toRadians(0));
-    /// /////////////////////////////////////////////////////^^from gg
+    public static double SPEED_OPEN_GATE      = 0.80;
+    public static double SPEED_RETURN_SHOOT1  = 1.00;
 
-    private PathChain moveOne, moveTwo, moveThree, moveFour;
-    private PathChain moveFive, moveSix, moveSeven;
+    public static double SPEED_TO_ROW2        = 1.00;
+    public static double SPEED_PICKUP_ROW2    = 0.60;
+
+    public static double SPEED_RETURN_SHOOT2  = 1.00;
+
+    public static double SPEED_LEAVE          = 1.00;
+
+    /* ================= ENUM STATE MACHINE ================= */
+    private enum AutoState {
+        MOVE_TO_SHOOT,
+        SHOOT_PRELOAD,
+
+        MOVE_ROW1,
+        PICKUP_ROW1,
+        OPEN_GATE_CURVE,
+        RETURN_SHOOT1,
+        SHOOT_CYCLE2,
+
+        MOVE_ROW2,
+        PICKUP_ROW2,
+        RETURN_SHOOT2,
+        SHOOT_CYCLE3,
+
+        LEAVE,
+        DONE
+    }
+
+    private AutoState state = AutoState.MOVE_TO_SHOOT;
+
+    /* ================= POSES ================= */
+    private final Pose startPos = new Pose(111, 135, Math.toRadians(0));
+    private final Pose shootPos = new Pose(105.33, 108.4, Math.toRadians(42));
+
+    private final Pose intakeRowOnePos = new Pose(95, 93, Math.toRadians(180));
+    private final Pose intakePickUpRowOnePos = new Pose(125, 93, Math.toRadians(180));
+
+    private final Pose openGate = new Pose(126.02, 90, Math.toRadians(180));
+    private final Pose openGateControlPoint = new Pose(100, 78);
+
+    private final Pose intakeRowTwoPos = new Pose(100, 70, Math.toRadians(180));
+    private final Pose intakePickUpRowTwoPos = new Pose(131, 67, Math.toRadians(180));
+
+    private final Pose leave = new Pose(96, 126.5, Math.toRadians(0));
+
+    /* ================= PATHS ================= */
+    private PathChain moveToShoot, moveToRow1, movePickUpRow1;
+    private PathChain moveOpenGate, returnShoot1;
+
+    private PathChain moveToRow2, movePickUpRow2, returnShoot2;
+    private PathChain moveLeave;
+
+    public void buildPaths() {
+
+        moveToShoot = follower.pathBuilder()
+                .addPath(new BezierLine(new Point(startPos), new Point(shootPos)))
+                .setLinearHeadingInterpolation(startPos.getHeading(), shootPos.getHeading())
+                .build();
+
+        moveToRow1 = follower.pathBuilder()
+                .addPath(new BezierLine(new Point(shootPos), new Point(intakeRowOnePos)))
+                .setLinearHeadingInterpolation(shootPos.getHeading(), intakeRowOnePos.getHeading())
+                .build();
+
+        movePickUpRow1 = follower.pathBuilder()
+                .addPath(new BezierLine(new Point(intakeRowOnePos), new Point(intakePickUpRowOnePos)))
+                .setLinearHeadingInterpolation(intakeRowOnePos.getHeading(), intakePickUpRowOnePos.getHeading())
+                .build();
+
+        moveOpenGate = follower.pathBuilder()
+                .addPath(new BezierCurve(
+                        new Point(intakePickUpRowOnePos),
+                        new Point(openGateControlPoint.getX(), openGateControlPoint.getY()),
+                        new Point(openGate)
+                ))
+                .setLinearHeadingInterpolation(intakePickUpRowOnePos.getHeading(), openGate.getHeading())
+                .build();
+
+        returnShoot1 = follower.pathBuilder()
+                .addPath(new BezierLine(new Point(openGate), new Point(shootPos)))
+                .setLinearHeadingInterpolation(openGate.getHeading(), shootPos.getHeading())
+                .build();
+
+        moveToRow2 = follower.pathBuilder()
+                .addPath(new BezierLine(new Point(shootPos), new Point(intakeRowTwoPos)))
+                .setLinearHeadingInterpolation(shootPos.getHeading(), intakeRowTwoPos.getHeading())
+                .build();
+
+        movePickUpRow2 = follower.pathBuilder()
+                .addPath(new BezierLine(new Point(intakeRowTwoPos), new Point(intakePickUpRowTwoPos)))
+                .setLinearHeadingInterpolation(intakeRowTwoPos.getHeading(), intakePickUpRowTwoPos.getHeading())
+                .build();
+
+        Point ctrl = new Point(100.929, 58.8972);
+
+        returnShoot2 = follower.pathBuilder()
+                .addPath(new BezierCurve(
+                        new Point(intakePickUpRowTwoPos),
+                        ctrl,
+                        new Point(shootPos)
+                ))
+                .setLinearHeadingInterpolation(intakePickUpRowTwoPos.getHeading(), shootPos.getHeading())
+                .build();
+
+        moveLeave = follower.pathBuilder()
+                .addPath(new BezierLine(new Point(shootPos), new Point(leave)))
+                .setLinearHeadingInterpolation(shootPos.getHeading(), leave.getHeading())
+                .build();
+    }
 
     /* ================= HARDWARE ================= */
     private DcMotorEx intake, shooter;
@@ -48,11 +150,10 @@ public class BlueAutoTest extends OpMode {
     private Servo spinServo, kickServo, adjustServo;
     private DistanceSensor distanceSensor;
 
-    /* ================= PWM ================= */
+    /* ================= CONSTANTS ================= */
     public static int PWM_MIN = 800;
     public static int PWM_MAX = 2200;
 
-    /* ================= INTAKE ================= */
     public static double INTAKE_POWER = 0.8;
     public static double CR_INTAKE_POWER = 1.0;
     public static double DISTANCE_CM = 2.0;
@@ -65,9 +166,8 @@ public class BlueAutoTest extends OpMode {
     private boolean lastDetected = false;
     private final ElapsedTime detectTimer = new ElapsedTime();
 
-    /* ================= SHOOTER ================= */
     public static double TICKS_PER_REV = 28.0;
-    public static double RPM = 2390;
+    public static double RPM = 2350;
     public static double RPM_TOL = 75;
     public static double HOOD_POS = 0.75;
 
@@ -75,19 +175,16 @@ public class BlueAutoTest extends OpMode {
     public static double SHOOT_B = 0.28;
     public static double SHOOT_C = 0.00;
 
-    /* ================= CR SHOOT ================= */
     public static double CR_L = 1.0;
     public static double CR_R = -1.0;
 
-    /* ================= KICKER ================= */
     public static double KICK_IDLE = 1.0;
     public static double KICK_ACTIVE = 0.7;
     public static double SETTLE_SEC = 0.35;
     public static double KICK_MS = 500;
     public static double POST_MS = 500;
 
-    /* ================= STATE ================= */
-    private enum Mode { IDLE, SHOOT }
+    enum Mode { IDLE, SHOOT }
     private Mode mode = Mode.IDLE;
 
     private enum ShootState {
@@ -98,170 +195,169 @@ public class BlueAutoTest extends OpMode {
 
     private ShootState shootState = ShootState.A;
     private final ElapsedTime shootTimer = new ElapsedTime();
+
     private boolean prespin = false;
 
-    /* ================= PATHS ================= */
-    public void buildPaths() {
-
-        moveOne = follower.pathBuilder()
-                .addPath(new BezierLine(new Point(startPos), new Point(shootPos)))
-                .setLinearHeadingInterpolation(startPos.getHeading(), shootPos.getHeading())
-                .build();
-
-        moveTwo = follower.pathBuilder()
-                .addPath(new BezierLine(new Point(shootPos), new Point(intakeRowOnePos)))
-                .setLinearHeadingInterpolation(shootPos.getHeading(), intakeRowOnePos.getHeading())
-                .build();
-
-        moveThree = follower.pathBuilder()
-                .addPath(new BezierLine(new Point(intakeRowOnePos), new Point(intakePickUpRowOnePos)))
-                .setLinearHeadingInterpolation(intakeRowOnePos.getHeading(), intakePickUpRowOnePos.getHeading())
-                .build();
-
-        moveFour = follower.pathBuilder()
-                .addPath(new BezierLine(new Point(intakePickUpRowOnePos), new Point(shootPos)))
-                .setLinearHeadingInterpolation(intakePickUpRowOnePos.getHeading(), shootPos.getHeading())
-                .build();
-
-        moveFive = follower.pathBuilder()
-                .addPath(new BezierLine(new Point(shootPos), new Point(intakeRowTwoPos)))
-                .setLinearHeadingInterpolation(shootPos.getHeading(), intakeRowTwoPos.getHeading())
-                .build();
-
-        moveSix = follower.pathBuilder()
-                .addPath(new BezierLine(new Point(intakeRowTwoPos), new Point(intakePickUpRowTwoPos)))
-                .setLinearHeadingInterpolation(intakeRowTwoPos.getHeading(), intakePickUpRowTwoPos.getHeading())
-                .build();
-
-        moveSeven = follower.pathBuilder()
-                .addPath(new BezierLine(new Point(intakePickUpRowTwoPos), new Point(shootPos)))
-                .setLinearHeadingInterpolation(intakePickUpRowTwoPos.getHeading(), shootPos.getHeading())
-                .build();
-    }
-
-    /* ================= AUTO FSM ================= */
+    /* ================= AUTO UPDATE ================= */
     public void autonomousPathUpdate() {
 
-        switch (pathState) {
+        updateMechanisms();
 
-            case 0: // Drive to shoot
+        switch (state) {
+
+            /* ---- DRIVE TO SHOOT ---- */
+            case MOVE_TO_SHOOT:
+                follower.setMaxPower(SPEED_TO_SHOOT);
                 prespin = true;
                 setShooterRPM(RPM);
-                adjustServo.setPosition(HOOD_POS);
-                follower.followPath(moveOne);
-                setPathState(1);
+
+                follower.followPath(moveToShoot);
+                state = AutoState.SHOOT_PRELOAD;
                 break;
 
-            case 1: // Shoot preload
+            case SHOOT_PRELOAD:
                 if (!follower.isBusy()) {
                     prespin = false;
                     startShoot(RPM, HOOD_POS);
-                    setPathState(2);
+                    state = AutoState.MOVE_ROW1;
                 }
                 break;
 
-            case 2: // After preload shot → Row 1
-                updateMechanisms();
+            /* ---- ROW 1 INTAKE ---- */
+            case MOVE_ROW1:
                 if (mode == Mode.IDLE) {
                     ballCount = 0;
-                    follower.followPath(moveTwo);
-                    setPathState(3);
+
+                    follower.setMaxPower(SPEED_TO_ROW1);
+                    runIntake(); // intake while moving
+                    follower.followPath(moveToRow1);
+
+                    state = AutoState.PICKUP_ROW1;
                 }
                 break;
 
-            case 3: // Start Row 1 intake
-                if (!follower.isBusy()) {
-                    prespin = true;
-                    setShooterRPM(RPM);
-                    follower.setMaxPower(0.2);
-                    follower.followPath(moveThree);
-                    setPathState(4);
-                }
-                break;
-
-            case 4: // Intake Row 1
-                prespin = true;
-                setShooterRPM(RPM);
+            case PICKUP_ROW1:
                 runIntake();
 
-                if (!follower.isBusy()) {
-                    follower.setMaxPower(1);
+                if (!follower.isBusy() && ballCount >= 3) {
                     stopIntake();
-                    follower.followPath(moveFour);
-                    setPathState(5);
+
+                    follower.setMaxPower(SPEED_PICKUP_ROW1);
+                    follower.followPath(movePickUpRow1);
+
+                    state = AutoState.OPEN_GATE_CURVE;
                 }
                 break;
 
-            case 5: // Shoot Row 1
+            /* ---- HIT LEVER ---- */
+            case OPEN_GATE_CURVE:
+                if (!follower.isBusy()) {
+
+                    follower.setMaxPower(SPEED_OPEN_GATE);
+                    follower.followPath(moveOpenGate);
+
+                    state = AutoState.RETURN_SHOOT1;
+                }
+                break;
+
+            /* ---- RETURN + SHOOT 2 ---- */
+            case RETURN_SHOOT1:
+                if (!follower.isBusy()) {
+
+                    follower.setMaxPower(SPEED_RETURN_SHOOT1);
+                    prespin = true;
+                    setShooterRPM(RPM);
+
+                    follower.followPath(returnShoot1);
+                    state = AutoState.SHOOT_CYCLE2;
+                }
+                break;
+
+            case SHOOT_CYCLE2:
                 if (!follower.isBusy()) {
                     prespin = false;
                     startShoot(RPM, HOOD_POS);
-                    setPathState(6);
+
+                    state = AutoState.MOVE_ROW2;
                 }
                 break;
 
-            case 6: // After Row 1 shot → Row 2
-                updateMechanisms();
+            /* ---- ROW 2 INTAKE ---- */
+            case MOVE_ROW2:
                 if (mode == Mode.IDLE) {
                     ballCount = 0;
-                    follower.followPath(moveFive);
-                    setPathState(7);
+
+                    follower.setMaxPower(SPEED_TO_ROW2);
+                    runIntake();
+                    follower.followPath(moveToRow2);
+
+                    state = AutoState.PICKUP_ROW2;
                 }
                 break;
 
-            case 7: // Start Row 2 intake
-                if (!follower.isBusy()) {
-                    prespin = true;
-                    setShooterRPM(RPM);
-                    follower.setMaxPower(0.2);
-                    follower.followPath(moveSix);
-                    setPathState(8);
-                }
-                break;
-
-            case 8: // Intake Row 2
-                prespin = true;
-                setShooterRPM(RPM);
+            case PICKUP_ROW2:
                 runIntake();
 
-                if (!follower.isBusy()) {
-                    follower.setMaxPower(1);
+                if (!follower.isBusy() && ballCount >= 3) {
                     stopIntake();
-                    follower.followPath(moveSeven);
-                    setPathState(9);
+
+                    follower.setMaxPower(SPEED_PICKUP_ROW2);
+                    follower.followPath(movePickUpRow2);
+
+                    state = AutoState.RETURN_SHOOT2;
                 }
                 break;
 
-            case 9: // Shoot Row 2
+            /* ---- RETURN + SHOOT 3 ---- */
+            case RETURN_SHOOT2:
+                if (!follower.isBusy()) {
+
+                    follower.setMaxPower(SPEED_RETURN_SHOOT2);
+                    prespin = true;
+                    setShooterRPM(RPM);
+
+                    follower.followPath(returnShoot2);
+                    state = AutoState.SHOOT_CYCLE3;
+                }
+                break;
+
+            case SHOOT_CYCLE3:
                 if (!follower.isBusy()) {
                     prespin = false;
                     startShoot(RPM, HOOD_POS);
-                    setPathState(10);
+
+                    state = AutoState.LEAVE;
                 }
                 break;
 
-            case 10: // End
-                updateMechanisms();
+            /* ---- LEAVE ---- */
+            case LEAVE:
                 if (mode == Mode.IDLE) {
-                    setPathState(-1);
+
+                    follower.setMaxPower(SPEED_LEAVE);
+                    follower.followPath(moveLeave);
+
+                    state = AutoState.DONE;
                 }
+                break;
+
+            case DONE:
+                if (!follower.isBusy()) stopAllMechanisms();
                 break;
         }
-    }
-
-    private void setPathState(int s) {
-        pathState = s;
-        pathTimer.resetTimer();
     }
 
     /* ================= INIT ================= */
     @Override
     public void init() {
+
         pathTimer = new Timer();
 
         Constants.setConstants(FConstants.class, LConstants.class);
+
         follower = new Follower(hardwareMap);
         follower.setStartingPose(startPos);
+
         buildPaths();
 
         intake = hardwareMap.get(DcMotorEx.class, "intake");
@@ -269,10 +365,6 @@ public class BlueAutoTest extends OpMode {
         shooter = hardwareMap.get(DcMotorEx.class, "shooter");
         shooter.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
         shooter.setDirection(DcMotorSimple.Direction.REVERSE);
-        shooter.setPIDFCoefficients(
-                DcMotorEx.RunMode.RUN_USING_ENCODER,
-                new PIDFCoefficients(70, 0, 8, 13.5)
-        );
 
         crLeft = hardwareMap.get(CRServo.class, "cr_left");
         crRight = hardwareMap.get(CRServo.class, "cr_right");
@@ -282,58 +374,34 @@ public class BlueAutoTest extends OpMode {
         kickServo = hardwareMap.get(Servo.class, "kick_servo");
         adjustServo = hardwareMap.get(Servo.class, "adjust_servo");
 
-        if (spinServo instanceof PwmControl)
-            ((PwmControl) spinServo).setPwmRange(new PwmControl.PwmRange(PWM_MIN, PWM_MAX));
-        if (adjustServo instanceof PwmControl)
-            ((PwmControl) adjustServo).setPwmRange(new PwmControl.PwmRange(PWM_MIN, PWM_MAX));
-
         distanceSensor = hardwareMap.get(DistanceSensor.class, "sensor_color_left");
 
         kickServo.setPosition(KICK_IDLE);
-        spinServo.setPosition(SHOOT_A);
+        spinServo.setPosition(INTAKE_0);
         adjustServo.setPosition(HOOD_POS);
     }
 
     @Override
     public void start() {
-        setPathState(0);
+        state = AutoState.MOVE_TO_SHOOT;
     }
 
     @Override
     public void loop() {
+
         follower.update();
         autonomousPathUpdate();
 
-        telemetry.addData("Path State", pathState);
-        telemetry.addData("Mode", mode);
-        telemetry.addData("RPM", getShooterRPM());
+        telemetry.addData("State", state);
         telemetry.addData("Ball Count", ballCount);
+        telemetry.addData("RPM", getShooterRPM());
         telemetry.update();
     }
 
-    /* ================= MECHANISMS ================= */
-
-    private void startShoot(double rpm, double hood) {
-        mode = Mode.SHOOT;
-        shootState = ShootState.A;
-        shootTimer.reset();
-        adjustServo.setPosition(hood);
-        setShooterRPM(rpm);
-    }
-
-    private void updateMechanisms() {
-        if (mode == Mode.SHOOT) runShoot();
-        else hold();
-    }
-
     /* ================= INTAKE ================= */
-
     private void runIntake() {
 
-        if (ballCount >= 3) {
-            stopIntake();
-            return;
-        }
+        if (ballCount >= 3) return;
 
         intake.setPower(INTAKE_POWER);
         setCR(CR_INTAKE_POWER, CR_INTAKE_POWER);
@@ -357,6 +425,18 @@ public class BlueAutoTest extends OpMode {
     }
 
     /* ================= SHOOT FSM ================= */
+    private void startShoot(double rpm, double hood) {
+        mode = Mode.SHOOT;
+        shootState = ShootState.A;
+        shootTimer.reset();
+        adjustServo.setPosition(hood);
+        setShooterRPM(rpm);
+    }
+
+    private void updateMechanisms() {
+        if (mode == Mode.SHOOT) runShoot();
+        else hold();
+    }
 
     private void runShoot() {
         switch (shootState) {
@@ -455,8 +535,16 @@ public class BlueAutoTest extends OpMode {
         kickServo.setPosition(KICK_IDLE);
     }
 
-    /* ================= HELPERS ================= */
+    private void stopAllMechanisms() {
+        stopIntake();
+        setShooterRPM(0);
+        spinServo.setPosition(INTAKE_0);
+        kickServo.setPosition(KICK_IDLE);
+        mode = Mode.IDLE;
+        prespin = false;
+    }
 
+    /* ================= HELPERS ================= */
     private void setCR(double l, double r) {
         crLeft.setPower(l);
         crRight.setPower(r);
