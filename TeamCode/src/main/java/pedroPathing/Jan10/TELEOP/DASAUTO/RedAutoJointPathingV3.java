@@ -46,6 +46,7 @@ public class RedAutoJointPathingV3 extends OpMode {
 
         MOVE_ROW2,
         PICKUP_ROW2,
+        DRIVE_PICKUP_ROW2,
         RETURN_SHOOT2,
         SHOOT_AFTER_ROW2,
 
@@ -64,10 +65,10 @@ public class RedAutoJointPathingV3 extends OpMode {
     private final Pose intakePickUpRowOnePos = new Pose(125, 93, Math.toRadians(180));
 
     private final Pose openGate = new Pose(127.02337075207845, 90, Math.toRadians(180));
-    private final Pose openGateControlPoint = new Pose(100, 78.03255813953488);
+    private final Pose openGateControlPoint = new Pose(100, 80);
 
-    private final Pose intakeRowTwoPos = new Pose(100, 70, Math.toRadians(180));
-    private final Pose intakePickUpRowTwoPos = new Pose(131, 67, Math.toRadians(180));
+    private final Pose intakeRowTwoPos = new Pose(95, 70, Math.toRadians(180));
+    private final Pose intakePickUpRowTwoPos = new Pose(133.3, 67, Math.toRadians(180));
 
     private final Pose leave = new Pose(95.99999999999999, 126.53915776241358, Math.toRadians(0));
 
@@ -108,7 +109,7 @@ public class RedAutoJointPathingV3 extends OpMode {
     /* ================= SHOOTER ================= */
 
     public static double TICKS_PER_REV = 28.0;
-    public static double RPM = 2350;
+    public static double RPM = 2300;
     public static double RPM_TOL = 75;
     public static double HOOD_POS = 0.75;
 
@@ -259,33 +260,61 @@ public class RedAutoJointPathingV3 extends OpMode {
                 break;
 
             case MOVE_ROW2:
-                if (mode == Mode.IDLE) {
-                    follower.followPath(moveIntakeRowTwo);
-                    state = AutoState.PICKUP_ROW2;
+                if (mode == Mode.IDLE && !follower.isBusy()) {
+
+// Start driving toward row 2 pickup
+                    follower.followPath(movePickUpRowTwo);
+
+// Reset counter so intake runs clean
+                    detectTimer.reset();
+                    lastDetected = false;
+
+                    state = AutoState.DRIVE_PICKUP_ROW2;
                 }
                 break;
 
-            case PICKUP_ROW2:
+
+            case DRIVE_PICKUP_ROW2:
+
+// KEEP INTAKE ON THE WHOLE TIME
                 runIntake();
+
+// OPTIONAL: Stop early if we grabbed 3 balls
+                if (ballCount >= 3) {
+                    stopIntake();
+                    follower.followPath(moveShootRowTwo);
+                    state = AutoState.RETURN_SHOOT2;
+                    break;
+                }
+
+// Normal finish of pickup path
                 if (!follower.isBusy()) {
                     stopIntake();
-                    follower.setMaxPower(0.6);
-                    follower.followPath(movePickUpRowTwo);
+
+// Go back to shooting position
+                    follower.followPath(moveShootRowTwo);
+
                     state = AutoState.RETURN_SHOOT2;
                 }
                 break;
 
+
             case RETURN_SHOOT2:
+
+// Prespin shooter while driving back (makes shooting instant)
+                setShooterRPM(RPM);
+
                 if (!follower.isBusy()) {
-                    follower.setMaxPower(1.0);
-                    follower.followPath(moveShootRowTwo);
                     state = AutoState.SHOOT_AFTER_ROW2;
                 }
                 break;
 
+
             case SHOOT_AFTER_ROW2:
-                if (!follower.isBusy()) {
-                    if (mode == Mode.IDLE) startShoot();
+
+// Shoot only once we fully arrived
+                if (mode == Mode.IDLE) {
+                    startShoot();
                     state = AutoState.LEAVE;
                 }
                 break;
