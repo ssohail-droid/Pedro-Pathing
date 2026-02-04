@@ -88,10 +88,10 @@ public class RedAutoTest extends OpMode {
     public static double POST_MS = 500;
 
     /* ================= STATE ================= */
-    private enum Mode { IDLE, SHOOT }
+    enum Mode { IDLE, SHOOT }
     private Mode mode = Mode.IDLE;
 
-    private enum ShootState {
+    enum ShootState {
         A, A_SETTLE, A_KICK, A_POST,
         B, B_SETTLE, B_KICK, B_POST,
         C, C_SETTLE, C_KICK, C_POST
