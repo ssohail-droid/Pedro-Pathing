@@ -27,8 +27,8 @@ import pedroPathing.constants.LConstants;
 
 // Final
 
-@Autonomous(name = "Red Auto Joint", group = "Examples")
-public class RedAutoJointPathingV3 extends OpMode {
+@Autonomous(name = "Blue Auto Joint", group = "Examples")
+public class BlueAutoJointPathingV3 extends OpMode {
 
     private Follower follower;
     private Timer pathTimer;
@@ -60,19 +60,19 @@ public class RedAutoJointPathingV3 extends OpMode {
 
     /* ================= POSES ================= */
 
-    private final Pose startPos = new Pose(111, 135, Math.toRadians(0));
-    private final Pose shootPos = new Pose(105.331136738056, 108.4, Math.toRadians(40));
+    private final Pose startPos = new Pose(32, 135, Math.toRadians(180));
+    private final Pose shootPos = new Pose(41, 111.05, Math.toRadians(140));
 
-    private final Pose intakeRowOnePos = new Pose(95, 93, Math.toRadians(180));
-    private final Pose intakePickUpRowOnePos = new Pose(125, 93, Math.toRadians(180));
+    private final Pose intakeRowOnePos = new Pose(52, 78, Math.toRadians(0));
+    private final Pose intakePickUpRowOnePos = new Pose(17.5, 78, Math.toRadians(0));
 
-    private final Pose openGate = new Pose(127.02337075207845, 90, Math.toRadians(180));
-    private final Pose openGateControlPoint = new Pose(100, 80);
+    private final Pose openGate = new Pose(16.3, 77.61107688829861, Math.toRadians(0));
+    private final Pose openGateControlPoint = new Pose(35, 79);
 
-    private final Pose intakeRowTwoPos = new Pose(95, 70, Math.toRadians(180));
-    private final Pose intakePickUpRowTwoPos = new Pose(133.3, 67, Math.toRadians(180));
+    private final Pose intakeRowTwoPos = new Pose(52, 55, Math.toRadians(0));
+    private final Pose intakePickUpRowTwoPos = new Pose(9 , 53.5, Math.toRadians(0));
 
-    private final Pose leave = new Pose(95.99999999999999, 126.53915776241358, Math.toRadians(0));
+    private final Pose leave = new Pose(49.357495881383855, 123.7693574958814, Math.toRadians(180));
 
     /* ================= PATHS ================= */
 
@@ -265,6 +265,7 @@ public class RedAutoJointPathingV3 extends OpMode {
                 if (mode == Mode.IDLE && !follower.isBusy()) {
 
 // Start driving toward row 2 pickup
+                    follower.setMaxPower(0.5);
                     follower.followPath(movePickUpRowTwo);
 
 // Reset counter so intake runs clean

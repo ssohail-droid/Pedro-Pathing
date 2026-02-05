@@ -21,7 +21,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import pedroPathing.constants.FConstants;
 import pedroPathing.constants.LConstants;
 
-@Autonomous(name = "Blue Auto New", group = "Main")
+@Autonomous(name = "Blue Auto", group = "Main")
 public class BlueAutoTestVTwo extends OpMode {
 
     /* ================= DRIVE ================= */
@@ -29,16 +29,20 @@ public class BlueAutoTestVTwo extends OpMode {
     private Timer pathTimer;
     private int pathState;
 
-    private final Pose startPos = new Pose(111, 135, Math.toRadians(0));
-    private final Pose shootPos = new Pose(105.331136738056, 108.4, Math.toRadians(42));
+    private final Pose startPos = new Pose(32, 135, Math.toRadians(180));
+    private final Pose shootPos = new Pose(41, 111.05, Math.toRadians(140));
 
-    private final Pose intakeRowOnePos = new Pose(95, 93, Math.toRadians(180));
-    private final Pose intakePickUpRowOnePos = new Pose(125, 93, Math.toRadians(180));
 
-    private final Pose intakeRowTwoPos = new Pose(100, 70, Math.toRadians(180));
-    private final Pose intakePickUpRowTwoPos = new Pose(131, 67, Math.toRadians(180));
+    private final Pose intakeRowOnePos = new Pose(52, 78, Math.toRadians(0));
+    /// ///////////////////////////////////////////////^^from ball
+    private final Pose intakePickUpRowOnePos = new Pose(17.5, 78, Math.toRadians(0));
+    /// /////////////////////////////////////////////////////^^from gg
 
-    private final Pose leave = new Pose(96, 126.5, Math.toRadians(0));
+    private final Pose intakeRowTwoPos = new Pose(52, 55, Math.toRadians(0));
+    /// ///////////////////////////////////////////////^^from ball
+    private final Pose intakePickUpRowTwoPos = new Pose(9 , 53.5, Math.toRadians(0));
+
+    private final Pose leave = new Pose(49.357495881383855, 123.7693574958814, Math.toRadians(180));
 
     private PathChain moveOne, moveTwo, moveThree, moveFour;
     private PathChain moveFive, moveSix, moveSeven, moveLeave;
@@ -54,7 +58,7 @@ public class BlueAutoTestVTwo extends OpMode {
     public static int PWM_MAX = 2200;
 
     /* ================= INTAKE ================= */
-    public static double INTAKE_POWER = 0.8;
+    public static double INTAKE_POWER = 0.9;
     public static double CR_INTAKE_POWER = 1.0;
     public static double DISTANCE_CM = 2.0;
 
@@ -68,7 +72,7 @@ public class BlueAutoTestVTwo extends OpMode {
 
     /* ================= SHOOTER ================= */
     public static double TICKS_PER_REV = 28.0;
-    public static double RPM = 2350;
+    public static double RPM = 2300;
     public static double RPM_TOL = 75;
     public static double HOOD_POS = 0.75;
 
@@ -136,7 +140,7 @@ public class BlueAutoTestVTwo extends OpMode {
 
 
 
-        Point moveSevenControl = new Point(100.929, 58.8972); // <-- Tune this point
+        Point moveSevenControl = new Point(65, 58); // <-- Tune this point
 
         moveSeven = follower.pathBuilder()
                 .addPath(new BezierCurve(
