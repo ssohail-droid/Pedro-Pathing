@@ -26,8 +26,8 @@ import pedroPathing.constants.FConstants;
 import pedroPathing.constants.LConstants;
 
 // Final
-
-@Autonomous(name = "Blue Auto Joint", group = "Examples")
+//Lock This Code NO CHANGE EVER
+@Autonomous(name = "Blue Auto Joint v6", group = "Examples")
 public class BlueAutoJointPathingV3 extends OpMode {
 
     private Follower follower;
@@ -59,20 +59,19 @@ public class BlueAutoJointPathingV3 extends OpMode {
     private AutoState state = AutoState.MOVE_TO_SHOOT;
 
     /* ================= POSES ================= */
-
     private final Pose startPos = new Pose(32, 135, Math.toRadians(180));
     private final Pose shootPos = new Pose(41, 111.05, Math.toRadians(140));
 
     private final Pose intakeRowOnePos = new Pose(52, 78, Math.toRadians(0));
-    private final Pose intakePickUpRowOnePos = new Pose(17.5, 78, Math.toRadians(0));
+    private final Pose intakePickUpRowOnePos = new Pose(20, 78, Math.toRadians(0));
 
-    private final Pose openGate = new Pose(16.3, 77.61107688829861, Math.toRadians(0));
-    private final Pose openGateControlPoint = new Pose(35, 79);
+    private final Pose openGate = new Pose(18.5, 71, Math.toRadians(0));
+    private final Pose openGateControlPoint = new Pose(35, 79, Math.toRadians(0));
 
     private final Pose intakeRowTwoPos = new Pose(52, 55, Math.toRadians(0));
-    private final Pose intakePickUpRowTwoPos = new Pose(9 , 53.5, Math.toRadians(0));
+    private final Pose intakePickUpRowTwoPos = new Pose(9, 53.5, Math.toRadians(0));
 
-    private final Pose leave = new Pose(49.357495881383855, 123.7693574958814, Math.toRadians(180));
+    private final Pose leave = new Pose(50, 123.76, Math.toRadians(180));
 
     /* ================= PATHS ================= */
 
@@ -184,7 +183,7 @@ public class BlueAutoJointPathingV3 extends OpMode {
                 .setLinearHeadingInterpolation(intakeRowTwoPos.getHeading(), intakePickUpRowTwoPos.getHeading())
                 .build();
 
-        Point control = new Point(100.929, 58.8972);
+        Point control = new Point(60, 58.8972);
 
         moveShootRowTwo = follower.pathBuilder()
                 .addPath(new BezierCurve(
@@ -265,7 +264,6 @@ public class BlueAutoJointPathingV3 extends OpMode {
                 if (mode == Mode.IDLE && !follower.isBusy()) {
 
 // Start driving toward row 2 pickup
-                    follower.setMaxPower(0.5);
                     follower.followPath(movePickUpRowTwo);
 
 // Reset counter so intake runs clean
