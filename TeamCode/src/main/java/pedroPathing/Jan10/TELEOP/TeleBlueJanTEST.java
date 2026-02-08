@@ -26,13 +26,13 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import pedroPathing.constants.FConstants;
 import pedroPathing.constants.LConstants;
 
-@TeleOp(name = "TELE BLUE FRONT(V2)", group = "Main")
+@TeleOp(name = "TELE BLUE FRONT", group = "Main")
 @Config
 public class TeleBlueJanTEST extends OpMode {
 
     /* ================= DRIVE ================= */
     private Follower follower;
-    private final Pose startPose = new Pose(41, 111.05, Math.toRadians(140));
+    private final Pose startPose = new Pose(50, 123.76, Math.toRadians(180));
 
     public static Pose TARGET_A = new Pose(41.71, 111.05, Math.toRadians(140));
     public static Pose TARGET_B = new Pose(28.83, 122.81, Math.toRadians(140));

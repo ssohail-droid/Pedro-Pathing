@@ -16,8 +16,8 @@ import pedroPathing.constants.FConstants;
 import pedroPathing.constants.LConstants;
 
 // plz disable later B4 Comp
-//@Autonomous(name = "Red Auto Joint Pathing", group = "Examples")
-public class RedAutoJointPathing extends OpMode {
+//@Autonomous(name = "Ahhhhhh Auto Joint Pathing", group = "Examples")
+public class BlueAutoJointPathing extends OpMode {
 
     private Follower follower;
     private Timer pathTimer, opmodeTimer;
@@ -43,20 +43,19 @@ public class RedAutoJointPathing extends OpMode {
 
     /* ================= POSES ================= */
 
-    private final Pose startPos = new Pose(111, 135, Math.toRadians(0));
-    private final Pose shootPos = new Pose(105.331136738056, 108.4, Math.toRadians(42));
+    private final Pose startPos = new Pose(32, 135, Math.toRadians(180));
+    private final Pose shootPos = new Pose(41, 111.05, Math.toRadians(140));
 
-    private final Pose intakeRowOnePos = new Pose(95, 93, Math.toRadians(180));
-    private final Pose intakePickUpRowOnePos = new Pose(125, 93, Math.toRadians(180));
+    private final Pose intakeRowOnePos = new Pose(52, 78, Math.toRadians(0));
+    private final Pose intakePickUpRowOnePos = new Pose(20, 78, Math.toRadians(0));
 
-    private final Pose openGate = new Pose(127.02337075207845, 90, Math.toRadians(180));
-    private final Pose openGateControlPoint = new Pose(100, 78.03255813953488);
+    private final Pose openGate = new Pose(18.5, 71, Math.toRadians(0));
+    private final Pose openGateControlPoint = new Pose(35, 79, Math.toRadians(0));
 
-    private final Pose intakeRowTwoPos = new Pose(100, 70, Math.toRadians(180));
-    private final Pose intakePickUpRowTwoPos = new Pose(131, 67, Math.toRadians(180));
+    private final Pose intakeRowTwoPos = new Pose(72, 55, Math.toRadians(0));
+    private final Pose intakePickUpRowTwoPos = new Pose(9, 55, Math.toRadians(0));
 
-    private final Pose leave = new Pose(95.99999999999999, 126.53915776241358, Math.toRadians(0));
-
+    private final Pose leave = new Pose(50, 123.76, Math.toRadians(180));
     /* ================= PATHS ================= */
 
     private PathChain moveToShoot, moveToIntakeRowOne, moveToPickUpRowOne;
@@ -109,7 +108,7 @@ public class RedAutoJointPathing extends OpMode {
                 .setLinearHeadingInterpolation(intakeRowTwoPos.getHeading(), intakePickUpRowTwoPos.getHeading())
                 .build();
 
-        Point moveSevenControl = new Point(100.929, 58.8972);
+        Point moveSevenControl = new Point(60, 58.8972);
 
         moveShootRowTwo = follower.pathBuilder()
                 .addPath(new BezierCurve(

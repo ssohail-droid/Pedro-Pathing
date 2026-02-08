@@ -27,7 +27,7 @@ import pedroPathing.constants.LConstants;
 
 // Final
 //Lock This Code NO CHANGE EVER
-@Autonomous(name = "Blue Auto Joint v6", group = "Examples")
+@Autonomous(name = "Blue Auto Joint", group = "Joint")
 public class BlueAutoJointPathingV3 extends OpMode {
 
     private Follower follower;
@@ -63,13 +63,13 @@ public class BlueAutoJointPathingV3 extends OpMode {
     private final Pose shootPos = new Pose(41, 111.05, Math.toRadians(140));
 
     private final Pose intakeRowOnePos = new Pose(52, 78, Math.toRadians(0));
-    private final Pose intakePickUpRowOnePos = new Pose(20, 78, Math.toRadians(0));
+    private final Pose intakePickUpRowOnePos = new Pose(18.5, 78, Math.toRadians(0));
 
-    private final Pose openGate = new Pose(18.5, 71, Math.toRadians(0));
+    private final Pose openGate = new Pose(17.5, 71, Math.toRadians(0));
     private final Pose openGateControlPoint = new Pose(35, 79, Math.toRadians(0));
 
-    private final Pose intakeRowTwoPos = new Pose(52, 55, Math.toRadians(0));
-    private final Pose intakePickUpRowTwoPos = new Pose(9, 53.5, Math.toRadians(0));
+    private final Pose intakeRowTwoPos = new Pose(54, 52, Math.toRadians(0));
+    private final Pose intakePickUpRowTwoPos = new Pose(9.5, 52, Math.toRadians(0));
 
     private final Pose leave = new Pose(50, 123.76, Math.toRadians(180));
 
@@ -95,7 +95,7 @@ public class BlueAutoJointPathingV3 extends OpMode {
 
     /* ================= INTAKE ================= */
 
-    public static double INTAKE_POWER = 0.8;
+    public static double INTAKE_POWER = 0.9;
     public static double CR_INTAKE_POWER = 1.0;
     public static double DISTANCE_CM = 2.0;
 
@@ -110,7 +110,7 @@ public class BlueAutoJointPathingV3 extends OpMode {
     /* ================= SHOOTER ================= */
 
     public static double TICKS_PER_REV = 28.0;
-    public static double RPM = 2300;
+    public static double RPM = 2350;
     public static double RPM_TOL = 75;
     public static double HOOD_POS = 0.75;
 
@@ -261,42 +261,50 @@ public class BlueAutoJointPathingV3 extends OpMode {
                 break;
 
             case MOVE_ROW2:
-                if (mode == Mode.IDLE && !follower.isBusy()) {
 
-// Start driving toward row 2 pickup
+                if (mode == Mode.IDLE) {
+                    follower.followPath(moveIntakeRowTwo);
+                    state = AutoState.PICKUP_ROW2;
+                }
+
+                break;
+
+
+            case PICKUP_ROW2:
+
+                if (!follower.isBusy()) {
+
+                    follower.setMaxPower(0.6); // optional like row 1
                     follower.followPath(movePickUpRowTwo);
 
-// Reset counter so intake runs clean
                     detectTimer.reset();
                     lastDetected = false;
 
                     state = AutoState.DRIVE_PICKUP_ROW2;
                 }
+
                 break;
 
 
             case DRIVE_PICKUP_ROW2:
 
-// KEEP INTAKE ON THE WHOLE TIME
                 runIntake();
 
-// OPTIONAL: Stop early if we grabbed 3 balls
                 if (ballCount >= 3) {
                     stopIntake();
+                    follower.setMaxPower(1.0);
                     follower.followPath(moveShootRowTwo);
                     state = AutoState.RETURN_SHOOT2;
                     break;
                 }
 
-// Normal finish of pickup path
                 if (!follower.isBusy()) {
                     stopIntake();
-
-// Go back to shooting position
+                    follower.setMaxPower(1.0);
                     follower.followPath(moveShootRowTwo);
-
                     state = AutoState.RETURN_SHOOT2;
                 }
+
                 break;
 
 
