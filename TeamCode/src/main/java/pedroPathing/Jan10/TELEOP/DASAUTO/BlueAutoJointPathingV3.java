@@ -63,13 +63,13 @@ public class BlueAutoJointPathingV3 extends OpMode {
     private final Pose shootPos = new Pose(41, 111.05, Math.toRadians(140));
 
     private final Pose intakeRowOnePos = new Pose(52, 78, Math.toRadians(0));
-    private final Pose intakePickUpRowOnePos = new Pose(18.5, 78, Math.toRadians(0));
+    private final Pose intakePickUpRowOnePos = new Pose(16, 78, Math.toRadians(0));
 
     private final Pose openGate = new Pose(17.5, 71, Math.toRadians(0));
     private final Pose openGateControlPoint = new Pose(35, 79, Math.toRadians(0));
 
     private final Pose intakeRowTwoPos = new Pose(54, 52, Math.toRadians(0));
-    private final Pose intakePickUpRowTwoPos = new Pose(9.5, 52, Math.toRadians(0));
+    private final Pose intakePickUpRowTwoPos = new Pose(7, 52, Math.toRadians(0));
 
     private final Pose leave = new Pose(50, 123.76, Math.toRadians(180));
 
@@ -264,6 +264,10 @@ public class BlueAutoJointPathingV3 extends OpMode {
 
                 if (mode == Mode.IDLE) {
                     follower.followPath(moveIntakeRowTwo);
+
+                    detectTimer.reset();
+                    lastDetected = false;
+
                     state = AutoState.PICKUP_ROW2;
                 }
 
@@ -277,8 +281,7 @@ public class BlueAutoJointPathingV3 extends OpMode {
                     follower.setMaxPower(0.6); // optional like row 1
                     follower.followPath(movePickUpRowTwo);
 
-                    detectTimer.reset();
-                    lastDetected = false;
+
 
                     state = AutoState.DRIVE_PICKUP_ROW2;
                 }

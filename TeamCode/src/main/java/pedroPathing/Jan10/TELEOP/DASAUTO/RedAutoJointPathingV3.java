@@ -64,13 +64,13 @@ public class RedAutoJointPathingV3 extends OpMode {
     private final Pose shootPos = new Pose(105.331136738056, 108.4, Math.toRadians(40));
 
     private final Pose intakeRowOnePos = new Pose(95, 93, Math.toRadians(180));
-    private final Pose intakePickUpRowOnePos = new Pose(125, 93, Math.toRadians(180));
+    private final Pose intakePickUpRowOnePos = new Pose(125.6, 93, Math.toRadians(180));
 
     private final Pose openGate = new Pose(127.02337075207845, 90, Math.toRadians(180));
     private final Pose openGateControlPoint = new Pose(100, 80);
 
     private final Pose intakeRowTwoPos = new Pose(95, 70, Math.toRadians(180));
-    private final Pose intakePickUpRowTwoPos = new Pose(133.3, 67, Math.toRadians(180));
+    private final Pose intakePickUpRowTwoPos = new Pose(135.4, 67, Math.toRadians(180));
 
     private final Pose leave = new Pose(95.99999999999999, 126.53915776241358, Math.toRadians(0));
 

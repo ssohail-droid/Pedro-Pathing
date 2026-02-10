@@ -35,12 +35,12 @@ public class BlueAutoTestVTwo extends OpMode {
 
     private final Pose intakeRowOnePos = new Pose(52, 78, Math.toRadians(0));
     /// ///////////////////////////////////////////////^^from ball
-    private final Pose intakePickUpRowOnePos = new Pose(17.5, 78, Math.toRadians(0));
+    private final Pose intakePickUpRowOnePos = new Pose(16, 78, Math.toRadians(0));
     /// /////////////////////////////////////////////////////^^from gg
 
     private final Pose intakeRowTwoPos = new Pose(52, 55, Math.toRadians(0));
     /// ///////////////////////////////////////////////^^from ball
-    private final Pose intakePickUpRowTwoPos = new Pose(9 , 53.5, Math.toRadians(0));
+    private final Pose intakePickUpRowTwoPos = new Pose(7 , 53.5, Math.toRadians(0));
 
     private final Pose leave = new Pose(49.357495881383855, 123.7693574958814, Math.toRadians(180));
 
