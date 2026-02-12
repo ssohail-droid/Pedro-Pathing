@@ -35,7 +35,7 @@ public class TeleRedJanTEST extends OpMode {
     private final Pose startPose = new Pose(95.99999999999999, 126.53915776241358, Math.toRadians(0));
 
     public static Pose TARGET_A = new Pose(107.3, 106, Math.toRadians(42));
-    public static Pose TARGET_B = new Pose(105.331136738056, 108.4, Math.toRadians(42));
+    public static Pose TARGET_B = new Pose(96.07907742998351, 98.91070840197695, Math.toRadians(42));
     public static Pose TARGET_C = new Pose(93.5, 14.38, Math.toRadians(71));
 
     public static double RPM_A = 2500;

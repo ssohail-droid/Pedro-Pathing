@@ -36,7 +36,7 @@ public class RedAutoTest extends OpMode {
     private final Pose intakePickUpRowOnePos = new Pose(126, 93, Math.toRadians(180));
 
     private final Pose intakeRowTwoPos = new Pose(100, 70, Math.toRadians(180));
-    private final Pose intakePickUpRowTwoPos = new Pose(130.5, 67, Math.toRadians(180));
+    private final Pose intakePickUpRowTwoPos = new Pose(131.8, 67, Math.toRadians(180));
 
     private final Pose leave = new Pose(96, 126.5, Math.toRadians(0));
 
