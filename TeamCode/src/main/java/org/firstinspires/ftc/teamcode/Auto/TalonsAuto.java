@@ -1,12 +1,13 @@
-package org.firstinspires.ftc.teamcode.pedroPathing.Jan10.TELEOP.DASAUTO;
+package org.firstinspires.ftc.teamcode.Auto;
 
 import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
+import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 
 import org.firstinspires.ftc.teamcode.General.Robot;
 
-
+@Autonomous
 public class TalonsAuto extends OpMode {
     private int index;
     private Robot BlueJai;
