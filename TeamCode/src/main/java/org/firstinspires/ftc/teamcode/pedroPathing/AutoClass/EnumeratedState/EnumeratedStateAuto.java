@@ -13,9 +13,6 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Servo;
 
-import org.firstinspires.ftc.teamcode.pedroPathing.constants.FConstants;
-import org.firstinspires.ftc.teamcode.pedroPathing.constants.LConstants;
-
 
 //@Autonomous(name = "EnumeratedStateAuto(V1.0)", group = "Examples")
 public class EnumeratedStateAuto extends OpMode {

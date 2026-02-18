@@ -13,9 +13,6 @@ import com.pedropathing.util.Constants;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 
-import org.firstinspires.ftc.teamcode.pedroPathing.constants.FConstants;
-import org.firstinspires.ftc.teamcode.pedroPathing.constants.LConstants;
-
 @Config
 //@TeleOp(name = "DriveOnly blue end", group = "Refactored")
 public class DriveTrain extends OpMode {

@@ -11,9 +11,6 @@ import com.pedropathing.util.Timer;
 
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 
-import org.firstinspires.ftc.teamcode.pedroPathing.constants.FConstants;
-import org.firstinspires.ftc.teamcode.pedroPathing.constants.LConstants;
-
 // plz disable later B4 Comp
 //@Autonomous(name = "Red Auto Joint Pathing", group = "Examples")
 public class RedAutoJointPathing extends OpMode {

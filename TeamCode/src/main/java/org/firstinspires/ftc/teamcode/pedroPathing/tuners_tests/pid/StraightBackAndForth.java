@@ -12,9 +12,6 @@ import com.pedropathing.pathgen.BezierLine;
 import com.pedropathing.pathgen.Path;
 import com.pedropathing.pathgen.Point;
 
-import org.firstinspires.ftc.teamcode.pedroPathing.constants.FConstants;
-import org.firstinspires.ftc.teamcode.pedroPathing.constants.LConstants;
-
 /**
  * This is the StraightBackAndForth autonomous OpMode. It runs the robot in a specified distance
  * straight forward. On reaching the end of the forward Path, the robot runs the backward Path the

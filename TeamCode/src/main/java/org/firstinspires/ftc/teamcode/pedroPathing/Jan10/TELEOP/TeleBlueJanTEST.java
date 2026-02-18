@@ -23,9 +23,6 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 
-import org.firstinspires.ftc.teamcode.pedroPathing.constants.FConstants;
-import org.firstinspires.ftc.teamcode.pedroPathing.constants.LConstants;
-
 @TeleOp(name = "TELE BLUE FRONT", group = "Main")
 @Config
 public class TeleBlueJanTEST extends OpMode {

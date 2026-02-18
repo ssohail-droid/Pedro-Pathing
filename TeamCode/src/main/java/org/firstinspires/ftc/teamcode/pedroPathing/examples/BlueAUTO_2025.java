@@ -19,8 +19,6 @@ import org.firstinspires.ftc.teamcode.pedroPathing.SubSystem.IntakeSubsystem;
 import org.firstinspires.ftc.teamcode.pedroPathing.SubSystem.ServoSubsystem;
 import org.firstinspires.ftc.teamcode.pedroPathing.SubSystem.ShooterSubsystem;
 import org.firstinspires.ftc.teamcode.pedroPathing.SubSystem.TransferSubsystem;
-import org.firstinspires.ftc.teamcode.pedroPathing.constants.FConstants;
-import org.firstinspires.ftc.teamcode.pedroPathing.constants.LConstants;
 
 @Config
 //@Autonomous(name = "BlueAUTO 2025 DECODE", group = "SeasonAutos")
