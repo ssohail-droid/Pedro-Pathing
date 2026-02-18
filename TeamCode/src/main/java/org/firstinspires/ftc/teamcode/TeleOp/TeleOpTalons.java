@@ -17,7 +17,7 @@ public class TeleOpTalons extends LinearOpMode {
     boolean robotCentric;
 
     double speedMultiplier;
-
+    int activeRPM;
 
     private Follower f;
 
@@ -55,6 +55,17 @@ public class TeleOpTalons extends LinearOpMode {
                 blueJai.startIntake(false);
             else
                 blueJai.stopIntake();
+
+            if (gamepad1.dpad_up && SharedData.getGreenIndex() != -1){
+                blueJai.setStoragePos(0 , false);
+                blueJai.setKickServo(true);
+                blueJai.setLaunchVelocity(activeRPM);
+            }
+            else if (gamepad1.dpad_down && SharedData.getGreenIndex() != -1){
+                blueJai.setStoragePos(0 , false);
+                blueJai.setKickServo(true);
+                blueJai.setLaunchVelocity(activeRPM);
+            }
 
 
 

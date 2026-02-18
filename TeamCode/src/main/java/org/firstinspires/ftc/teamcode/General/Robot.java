@@ -19,6 +19,8 @@ public class Robot {
     ColorSensor color;
     DistanceSensor distance;
 
+    int targetVelocity;
+
     int slotGoal;
     Limelight3A limelight;
 
@@ -32,7 +34,6 @@ public class Robot {
                 DcMotorEx.RunMode.RUN_USING_ENCODER,
                 new PIDFCoefficients(70, 0, 8, 13.5)
         );
-
         crLeft = hardwareMap.get(CRServo.class, "cr_left");
         crRight = hardwareMap.get(CRServo.class, "cr_right");
         crRight.setDirection(DcMotorSimple.Direction.REVERSE);
@@ -74,7 +75,7 @@ public class Robot {
         return ColorSensed.INCONCLUSIVE;
     }
 
-    void setStoragePos(int slot, boolean intake){
+    public void setStoragePos(int slot, boolean intake){
         slotGoal = slot;
         if (intake){
             if(slot == 1){spinServo.setPosition(.145);}
@@ -87,15 +88,24 @@ public class Robot {
         }
     }
 
-    void setKickServo(boolean kick){
+    public void setKickServo(boolean kick){
         if(kick){kickServo.setPosition(.7);}
         else{kickServo.setPosition(1);}
     }
 
-    void setAdjustServo(){
+    public void setAdjustServo(){
         //figure out positions from sohail
         //lowest value is closest
     }
 
+    public void setLaunchVelocity(int rpm){
+        targetVelocity = (rpm*28) / 60;
+        shooter.setVelocity(targetVelocity);
+
+
+    }
+    public boolean shooterAtSpeed() {
+        return Math.abs(shooter.getVelocity() - targetVelocity) < 35;
+    }
 
 }
