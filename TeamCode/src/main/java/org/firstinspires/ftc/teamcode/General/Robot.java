@@ -15,6 +15,9 @@ public class Robot {
     Servo spinServo, kickServo, adjustServo;
     ColorSensor color;
     DistanceSensor distance;
+
+    int slotGoal;
+
     public Robot(HardwareMap hardwareMap){
         intake = hardwareMap.get(DcMotorEx.class, "intake");
 
@@ -37,6 +40,49 @@ public class Robot {
         distance = hardwareMap.get(DistanceSensor.class, "sensor_color_left");
         color = hardwareMap.get(ColorSensor.class, "sensor_color_right");
     }
+
+    void intake(boolean in){
+        crRight.setPower(1);
+        crLeft.setPower(1);
+        intake.setPower(in ? .9 : -.9);
+    }
+    void stopIntake(){
+        crRight.setPower(0);
+        crLeft.setPower(0);
+        intake.setPower(0);
+    }
+
+    boolean detectBall(){
+        return false;
+    }
+
+    ColorSensed detectColor(){
+        return ColorSensed.INCONCLUSIVE;
+    }
+
+    void setStoragePos(int slot, boolean intake){
+        slotGoal = slot;
+        if (intake){
+            if(slot == 1){spinServo.setPosition(.145);}
+            else if (slot == 2){spinServo.setPosition(.41);}
+            else if (slot == 3){spinServo.setPosition(.7);}
+        }else{
+            if(slot == 1){spinServo.setPosition(.56);}
+            else if (slot == 2){spinServo.setPosition(.28);}
+            else if (slot == 3){spinServo.setPosition(0);}
+        }
+    }
+
+    void setKickServo(boolean kick){
+        if(kick){kickServo.setPosition(.7);}
+        else{kickServo.setPosition(1);}
+    }
+
+    void setAdjustServo(){
+        //figure out positions from sohail
+    }
+
+
 
 
 }
