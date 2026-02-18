@@ -52,12 +52,20 @@ public class Robot {
         crLeft.setPower(1);
         intake.setPower(in ? .9 : -.9);
     }
+
     public void stopIntake(){
         crRight.setPower(0);
         crLeft.setPower(0);
         intake.setPower(0);
     }
-
+    public void startRollers(){
+        crRight.setPower(1);
+        crLeft.setPower(1);
+    }
+    public void stopRollers(){
+        crRight.setPower(0);
+        crLeft.setPower(0);
+    }
     boolean detectBall(){
         return distance.getDistance(DistanceUnit.CM) < 3;
     }
