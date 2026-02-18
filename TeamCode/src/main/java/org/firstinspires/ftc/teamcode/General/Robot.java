@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.General;
 
+import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
@@ -15,6 +16,8 @@ public class Robot {
     Servo spinServo, kickServo, adjustServo;
     ColorSensor color;
     DistanceSensor distance;
+    Limelight3A limelight;
+
     public Robot(HardwareMap hardwareMap){
         intake = hardwareMap.get(DcMotorEx.class, "intake");
 
@@ -34,9 +37,15 @@ public class Robot {
         kickServo = hardwareMap.get(Servo.class, "kick_servo");
         adjustServo = hardwareMap.get(Servo.class, "adjust_servo");
 
+        limelight = hardwareMap.get(Limelight3A.class, "limelight");
+
         distance = hardwareMap.get(DistanceSensor.class, "sensor_color_left");
         color = hardwareMap.get(ColorSensor.class, "sensor_color_right");
     }
+
+
+
+
 
 
 }
