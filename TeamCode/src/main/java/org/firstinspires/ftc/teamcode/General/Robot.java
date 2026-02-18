@@ -17,8 +17,8 @@ public class Robot {
     DistanceSensor distance;
     public Robot(HardwareMap hardwareMap){
         intake = hardwareMap.get(DcMotorEx.class, "intake");
-        intake = hardwareMap.get(DcMotorEx.class, "shooter");
 
+        shooter = hardwareMap.get(DcMotorEx.class, "shooter");
         shooter.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
         shooter.setDirection(DcMotorSimple.Direction.REVERSE);
         shooter.setPIDFCoefficients(
@@ -37,4 +37,6 @@ public class Robot {
         distance = hardwareMap.get(DistanceSensor.class, "sensor_color_left");
         color = hardwareMap.get(ColorSensor.class, "sensor_color_right");
     }
+
+
 }
