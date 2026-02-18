@@ -17,6 +17,7 @@ public class Robot {
     DistanceSensor distance;
 
     int slotGoal;
+    Limelight3A limelight;
 
     public Robot(HardwareMap hardwareMap){
         intake = hardwareMap.get(DcMotorEx.class, "intake");
@@ -36,6 +37,8 @@ public class Robot {
         spinServo = hardwareMap.get(Servo.class, "spin");
         kickServo = hardwareMap.get(Servo.class, "kick_servo");
         adjustServo = hardwareMap.get(Servo.class, "adjust_servo");
+
+        limelight = hardwareMap.get(Limelight3A.class, "limelight");
 
         distance = hardwareMap.get(DistanceSensor.class, "sensor_color_left");
         color = hardwareMap.get(ColorSensor.class, "sensor_color_right");
@@ -81,6 +84,10 @@ public class Robot {
     void setAdjustServo(){
         //figure out positions from sohail
     }
+
+
+
+
 
 
 
