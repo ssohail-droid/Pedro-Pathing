@@ -4,7 +4,6 @@ package org.firstinspires.ftc.teamcode.TeleOp;
 import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.Pose;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 
 import org.firstinspires.ftc.teamcode.General.Constants;
 import org.firstinspires.ftc.teamcode.General.Robot;
@@ -13,7 +12,7 @@ import org.firstinspires.ftc.teamcode.General.Side;
 
 public class TeleOpTalons extends LinearOpMode {
 
-    private Robot BlueJai;
+    private Robot blueJai;
 
     boolean robotCentric;
 
@@ -24,7 +23,7 @@ public class TeleOpTalons extends LinearOpMode {
 
 
     public void runOpMode() throws InterruptedException{
-        BlueJai = new Robot(hardwareMap);
+        blueJai = new Robot(hardwareMap);
 
         f = Constants.createFollower(hardwareMap);
         f.setStartingPose(new Pose(0,0,0));
@@ -49,13 +48,14 @@ public class TeleOpTalons extends LinearOpMode {
             else speedMultiplier = 1;
 
             if(SharedData.isFull())
-                BlueJai.startIntake(false);
-            else if(gamepad1.right_bumper)
-                BlueJai.startIntake(true);
-            else if(gamepad1.left_bumper)
-                BlueJai.startIntake(false);
+                blueJai.startIntake(false);
+            else if(gamepad2.right_bumper)
+                blueJai.startIntake(true);
+            else if(gamepad2.left_bumper)
+                blueJai.startIntake(false);
             else
-                BlueJai.stopIntake();
+                blueJai.stopIntake();
+
 
 
         }
