@@ -47,7 +47,7 @@ public class Robot {
         color = hardwareMap.get(ColorSensor.class, "sensor_color_right");
     }
 
-    void intake(boolean in){
+    void startIntake(boolean in){
         crRight.setPower(1);
         crLeft.setPower(1);
         intake.setPower(in ? .9 : -.9);
