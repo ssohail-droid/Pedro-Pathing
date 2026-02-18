@@ -10,6 +10,8 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 import com.qualcomm.robotcore.hardware.Servo;
 
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
+
 public class Robot {
     DcMotorEx intake, shooter;
     CRServo crRight, crLeft;
@@ -57,7 +59,7 @@ public class Robot {
     }
 
     boolean detectBall(){
-        return false;
+        return distance.getDistance(DistanceUnit.CM) < 3;
     }
 
     ColorSensed detectColor(){
@@ -84,14 +86,8 @@ public class Robot {
 
     void setAdjustServo(){
         //figure out positions from sohail
+        //lowest value is closest
     }
-
-
-
-
-
-
-
 
 
 }
