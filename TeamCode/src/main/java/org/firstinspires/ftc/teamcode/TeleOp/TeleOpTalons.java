@@ -47,9 +47,7 @@ public class TeleOpTalons extends LinearOpMode {
             }
             else speedMultiplier = 1;
 
-            if(SharedData.isFull())
-                blueJai.startIntake(false);
-            else if(gamepad2.right_bumper)
+            if(gamepad2.right_bumper)
                 blueJai.startIntake(true);
             else if(gamepad2.left_bumper)
                 blueJai.startIntake(false);
@@ -57,12 +55,12 @@ public class TeleOpTalons extends LinearOpMode {
                 blueJai.stopIntake();
 
             if (gamepad1.dpad_up && SharedData.getGreenIndex() != -1){
-                blueJai.setStoragePos(0 , false);
+                blueJai.setStoragePos(SharedData.getGreenIndex() , false);
                 blueJai.setKickServo(true);
                 blueJai.setLaunchVelocity(activeRPM);
             }
-            else if (gamepad1.dpad_down && SharedData.getGreenIndex() != -1){
-                blueJai.setStoragePos(0 , false);
+            else if (gamepad1.dpad_down && SharedData.getPurpleIndex() != -1){
+                blueJai.setStoragePos(SharedData.getPurpleIndex() , false);
                 blueJai.setKickServo(true);
                 blueJai.setLaunchVelocity(activeRPM);
             }
