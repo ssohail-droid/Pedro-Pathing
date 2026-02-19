@@ -11,6 +11,7 @@ import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 
+import org.firstinspires.ftc.teamcode.General.ColorSensed;
 import org.firstinspires.ftc.teamcode.General.PoseConstants;
 import org.firstinspires.ftc.teamcode.General.Robot;
 import org.firstinspires.ftc.teamcode.General.SharedData;
@@ -29,6 +30,8 @@ public class TalonsAuto extends OpMode {
     private PathChain toShootOne, toAlignOne, toPickupOne, toShootTwo, toAlignTwo, toPickupTwo, toShootThree, leave;
 
     private int timesLaunched = 0;
+    private boolean launching = false;
+    private boolean launched = false;
 
     @Override
     public void init() {
@@ -45,7 +48,7 @@ public class TalonsAuto extends OpMode {
         f.setStartingPose(SharedData.side == Side.RED ? new Pose(111,135,0) : new Pose(32, 135, Math.toRadians(180)));
         buildPaths();
 
-
+        blueJai.setAdjustServo(.75);
     }
 
     @Override
@@ -61,6 +64,39 @@ public class TalonsAuto extends OpMode {
     @Override
     public void loop() {
         autoPathUpdates();
+        //.35 sort time, .5 kick + return time
+        if(launching){
+            blueJai.setLaunchVelocity(2300);//set a velocity eventually
+
+            if(timesLaunched == SharedData.greenIndex && !SharedData.isEmpty()){
+                blueJai.setStoragePos(SharedData.getGreenIndex() != -1 ? SharedData.getGreenIndex() : SharedData.getPurpleIndex(), false);
+            }
+            //Control post-launch sequence
+            if(launched) {
+                if (launchTimer.getElapsedTimeSeconds() > 1) {
+                    SharedData.clearSlot(blueJai.slotGoal);
+                    launchTimer.resetTimer();
+                    timesLaunched = timesLaunched == 2 ? timesLaunched = 0 : timesLaunched + 1;
+                    launched = false;
+                } else if (launchTimer.getElapsedTimeSeconds() > .5) {
+                    blueJai.setKickServo(false);
+                }
+            }
+            //check if ready to launch
+            if(launchTimer.getElapsedTimeSeconds() >= .35 && blueJai.shooterAtSpeed() && !launched){
+                blueJai.setKickServo(true);
+                launched = true;
+                launchTimer.resetTimer();
+            }
+
+        }
+        else{
+            if(detectColorTimer.getElapsedTimeSeconds() > .4 && blueJai.detectBall()){
+                SharedData.storage[blueJai.slotGoal] = blueJai.detectColor();
+            }
+            blueJai.setStoragePos(SharedData.storage[0] == ColorSensed.NO_COLOR ? 0 : (SharedData.storage[1] == ColorSensed.NO_COLOR ? 1 : 2),!SharedData.isFull());
+        }
+
     }
 
     public int figureID(){
@@ -122,11 +158,13 @@ public class TalonsAuto extends OpMode {
                 if(!f.isBusy() && SharedData.isEmpty()){
                     f.followPath(toAlignOne,true);
                     setPathState(2);
-                    //launching false
+                    launching = false;
                     blueJai.stopRollers();
                 }
                 else if(!f.isBusy() && pathTimer.getElapsedTimeSeconds() > 3){
-                    //launching true
+                    if(launching == false) //idk if this part is needed or not (idea is to reset the launch timer doing into the launching sequence)
+                        launchTimer.resetTimer();
+                    launching = true;
                     blueJai.startRollers();
                 }
                 break;
@@ -149,11 +187,13 @@ public class TalonsAuto extends OpMode {
                 if(!f.isBusy() && SharedData.isEmpty()){
                     f.followPath(toAlignTwo,true);
                     setPathState(5);
-                    //launching false
+                    launching = false;
                     blueJai.stopRollers();
                 }
                 else if(!f.isBusy() && pathTimer.getElapsedTimeSeconds() < 3){
-                    //launching true
+                    if(launching == false)
+                        launchTimer.resetTimer();
+                    launching = true;
                     blueJai.stopIntake();
                     blueJai.startRollers();
                 }
@@ -180,7 +220,9 @@ public class TalonsAuto extends OpMode {
                     blueJai.startRollers();
                 }
                 else if(!f.isBusy() && pathTimer.getElapsedTimeSeconds() > 3){
-                    //launching true
+                    if(launching == false)
+                        launchTimer.resetTimer();
+                    launching = true;
                     blueJai.stopIntake();
                     blueJai.startRollers();
                 }
@@ -188,7 +230,7 @@ public class TalonsAuto extends OpMode {
             case 8:
                 if(!f.isBusy()){
                     setPathState(-1);
-                    //launching false
+                    launching = false;
                 }
                 break;
 

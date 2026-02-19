@@ -21,7 +21,7 @@ public class Robot {
 
     int targetVelocity;
 
-    int slotGoal;
+    public int slotGoal;
     Limelight3A limelight;
 
     public Robot(HardwareMap hardwareMap){
@@ -67,11 +67,11 @@ public class Robot {
         crRight.setPower(0);
         crLeft.setPower(0);
     }
-    boolean detectBall(){
+    public boolean detectBall(){
         return distance.getDistance(DistanceUnit.CM) < 3;
     }
 
-    ColorSensed detectColor(){
+    public ColorSensed detectColor(){
         return ColorSensed.INCONCLUSIVE;
     }
 
@@ -93,9 +93,8 @@ public class Robot {
         else{kickServo.setPosition(1);}
     }
 
-    public void setAdjustServo(){
-        //figure out positions from sohail
-        //lowest value is closest
+    public void setAdjustServo(double pos){
+        adjustServo.setPosition(pos);
     }
 
     public void setLaunchVelocity(int rpm){
