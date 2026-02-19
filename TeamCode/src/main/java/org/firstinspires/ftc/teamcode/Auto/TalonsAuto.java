@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.Auto;
 
 import com.pedropathing.follower.Follower;
+import com.pedropathing.geometry.BezierLine;
 import com.pedropathing.geometry.Pose;
 import com.pedropathing.paths.Path;
 import com.pedropathing.paths.PathChain;
@@ -10,6 +11,7 @@ import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 
+import org.firstinspires.ftc.teamcode.General.PoseConstants;
 import org.firstinspires.ftc.teamcode.General.Robot;
 import org.firstinspires.ftc.teamcode.General.SharedData;
 import org.firstinspires.ftc.teamcode.General.Side;
@@ -23,6 +25,7 @@ public class TalonsAuto extends OpMode {
     private int pathState;
     private Timer pathTimer,opmodeTimer,launchTimer,detectColorTimer;
 
+    private PoseConstants poses = new PoseConstants();
     private PathChain toShootOne, toAlignOne, toPickupOne, toShootTwo, toAlignTwo, toPickupTwo, toShootThree, leave;
 
     private int timesLaunched = 0;
@@ -72,9 +75,41 @@ public class TalonsAuto extends OpMode {
             return -1;
         }
     }
-
     void buildPaths(){
+        toShootOne = f.pathBuilder()
+                .addPath(new BezierLine(poses.startPos, poses.shootPos))
+                .setLinearHeadingInterpolation(poses.startPos.getHeading(), poses.shootPos.getHeading())
+                .build();
 
+        toAlignOne = f.pathBuilder()
+                .addPath(new BezierLine(poses.shootPos, poses.alignOne))
+                .setLinearHeadingInterpolation(poses.shootPos.getHeading(), poses.alignOne.getHeading())
+                .build();
+        toPickupOne = f.pathBuilder()
+                .addPath(new BezierLine(poses.alignOne, poses.pickupOne))
+                .setLinearHeadingInterpolation(poses.alignOne.getHeading(), poses.pickupOne.getHeading())
+                .build();
+
+        toShootTwo = f.pathBuilder()
+                .addPath(new BezierLine(poses.pickupOne, poses.shootPos))
+                .setLinearHeadingInterpolation(poses.pickupOne.getHeading(), poses.shootPos.getHeading())
+                .build();
+        toAlignTwo = f.pathBuilder()
+                .addPath(new BezierLine(poses.shootPos, poses.alignTwo))
+                .setLinearHeadingInterpolation(poses.shootPos.getHeading(), poses.alignTwo.getHeading())
+                .build();
+        toPickupTwo = f.pathBuilder()
+                .addPath(new BezierLine(poses.alignTwo, poses.pickupTwo))
+                .setLinearHeadingInterpolation(poses.alignTwo.getHeading(), poses.pickupTwo.getHeading())
+                .build();
+        toShootThree = f.pathBuilder()
+                .addPath(new BezierLine(poses.pickupTwo, poses.shootPos))
+                .setLinearHeadingInterpolation(poses.pickupTwo.getHeading(), poses.shootPos.getHeading())
+                .build();
+        leave = f.pathBuilder()
+                .addPath(new BezierLine(poses.shootPos, poses.leave))
+                .setLinearHeadingInterpolation(poses.shootPos.getHeading(), poses.leave.getHeading())
+                .build();
     }
     void autoPathUpdates(){
         sendPose();
@@ -98,7 +133,7 @@ public class TalonsAuto extends OpMode {
             case 2:
                 if(!f.isBusy()){
                     f.followPath(toPickupOne,true);
-                    //f.setMaxPower(idk);
+                    f.setMaxPower(.5);
                     blueJai.startIntake(true);
                     setPathState(3);
                 }
@@ -106,7 +141,7 @@ public class TalonsAuto extends OpMode {
             case 3:
                 if(!f.isBusy() || SharedData.isFull()){
                     f.followPath(toShootTwo,true);
-                    //f.setMaxPower(1);
+                    f.setMaxPower(1);
                     setPathState(4);
                 }
                 break;
@@ -126,7 +161,7 @@ public class TalonsAuto extends OpMode {
             case 5:
                 if(!f.isBusy()){
                     f.followPath(toPickupTwo,true);
-                    //f.setMaxPower(idk);
+                    f.setMaxPower(.5);
                     blueJai.startIntake(true);
                     setPathState(6);
                 }
@@ -134,7 +169,7 @@ public class TalonsAuto extends OpMode {
             case 6:
                 if(!f.isBusy() || SharedData.isFull()){
                     f.followPath(toShootThree);
-                    //f.setMaxPower(1);
+                    f.setMaxPower(1);
                     setPathState(7);
                 }
                 break;
@@ -159,9 +194,7 @@ public class TalonsAuto extends OpMode {
 
         }
     }
-
     public void sendPose(){SharedData.toTeleopPose = f.getPose();}
-
     public void setPathState(int state){
         pathState = state;
         pathTimer.resetTimer();
