@@ -10,6 +10,7 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 import com.qualcomm.robotcore.hardware.Servo;
 
+import org.firstinspires.ftc.robotcore.external.JavaUtil;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 
 public class Robot {
@@ -72,7 +73,14 @@ public class Robot {
     }
 
     public ColorSensed detectColor(){
-        return ColorSensed.INCONCLUSIVE;
+
+
+            double saturationR = JavaUtil.rgbToSaturation(color.red(), color.green(), color.blue());
+            double hueR = JavaUtil.rgbToHue(color.red(), color.green(), color.blue());
+
+            ColorSensed  sensedColor =  (hueR > 160 && saturationR < .3) ? ColorSensed.PURPLE : ((hueR < 150 && saturationR > .65) ? ColorSensed.GREEN : ColorSensed.INCONCLUSIVE);
+
+            return sensedColor;
     }
 
     public void setStoragePos(int slot, boolean intake){
