@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.TeleOp;
 
 import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.Pose;
+import com.pedropathing.util.Timer;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
 import org.firstinspires.ftc.teamcode.General.Constants;
@@ -18,6 +19,11 @@ public class TeleOpTalons extends LinearOpMode {
 
     double speedMultiplier;
     int activeRPM;
+    int ballsLaunched;
+    boolean launching;
+    Timer launchTimer;
+
+    static int closeLaunch = 2640, farLaunch = 4100, REST;
 
     private Follower f;
 
@@ -31,7 +37,7 @@ public class TeleOpTalons extends LinearOpMode {
 
         waitForStart();
 
-        f.startTeleOpDrive(true);
+        f.startTeleopDrive(true);
         while (opModeIsActive()){
             f.setTeleOpDrive(
                     -gamepad1.left_stick_y * speedMultiplier,
@@ -68,6 +74,29 @@ public class TeleOpTalons extends LinearOpMode {
 
 
         }
+
+
+        }
+        public void updateLaunch(){
+            if (launching && blueJai.shooterAtSpeed()) {
+                if (launchTimer.getElapsedTimeSeconds() > 0.35 /* && kicker is at not at launch pos check*/) {
+                    //launch
+                    blueJai.setLaunchVelocity(closeLaunch);
+                }
+                if (launchTimer.getElapsedTimeSeconds() > 0.75) {
+                    //reset kicker
+                }
+                if (launchTimer.getElapsedTimeSeconds() > 1.25) {
+                    ballsLaunched++; // count to make sure it knows how many its shot
+                    launchTimer.resetTimer();
+                }
+
+                if (ballsLaunched > 3) {
+                    launching = false;
+                    ballsLaunched = 0;
+                    blueJai.setLaunchVelocity(REST);
+                }
+            }
 
     }
 
