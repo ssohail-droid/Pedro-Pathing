@@ -9,6 +9,7 @@ public class SharedData {
     public static Pose toTeleopPose;
     public static ColorSensed[] storage = {ColorSensed.GREEN, ColorSensed.PURPLE, ColorSensed.PURPLE};
     public static Side side = Side.RED;
+    public static int balls;
 //    public static boolean startFar = true;
 //    public static boolean shootFar;
 
@@ -58,6 +59,11 @@ public class SharedData {
         return temp;
 
     }
+
+    public static int getBallCount(){
+        return SharedData.balls;
+    }
+
     public static void clearSlot(int i) {storage[i] = ColorSensed.NO_COLOR;}
 
 

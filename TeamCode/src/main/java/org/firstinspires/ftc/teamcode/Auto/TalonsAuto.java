@@ -12,6 +12,7 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 
 import org.firstinspires.ftc.teamcode.General.ColorSensed;
+import org.firstinspires.ftc.teamcode.General.Constants;
 import org.firstinspires.ftc.teamcode.General.PoseConstants;
 import org.firstinspires.ftc.teamcode.General.Robot;
 import org.firstinspires.ftc.teamcode.General.SharedData;
@@ -44,8 +45,8 @@ public class TalonsAuto extends OpMode {
         opmodeTimer = new Timer();
         launchTimer = new Timer();
         detectColorTimer = new Timer();
-
-        f.setStartingPose(SharedData.side == Side.RED ? new Pose(111,135,0) : new Pose(32, 135, Math.toRadians(180)));
+        f = Constants.createFollower(hardwareMap);
+        f.setStartingPose(poses.startPos);
         buildPaths();
 
         blueJai.setAdjustServo(.75);
@@ -58,21 +59,42 @@ public class TalonsAuto extends OpMode {
         if (ID == 21) SharedData.greenIndex = 0;
         else if (ID == 22) SharedData.greenIndex = 1;
         else if (ID == 23) SharedData.greenIndex = 2;
-
+        telemetry.addData("at" , "initloop");
+        telemetry.update();
     }
 
     @Override
+    public void start(){
+
+    }
+
+
+    @Override
     public void loop() {
+        f.update();
+        sendPose();
         autoPathUpdates();
         //.35 sort time, .5 kick + return time
         if(launching){
-            blueJai.setLaunchVelocity(2300);//set a velocity eventually
+            blueJai.setLaunchVelocity(2640);//set a velocity eventually, for now its an rpm
+            telemetry.addData("at" , "velocity setting");
+            telemetry.addData("vel" , blueJai.getLaunchVelocity());
+            telemetry.addData("at" , blueJai.getLaunchRPM());
+            telemetry.addData("launched" , launched);
+            telemetry.addData("timesLaunched" , timesLaunched);
+            telemetry.addData("balls" , SharedData.isFull());
+
+            if (opmodeTimer.getElapsedTimeSeconds() > 15){
+                launching=false;
+            }
 
             if(timesLaunched == SharedData.greenIndex && !SharedData.isEmpty()){
                 blueJai.setStoragePos(SharedData.getGreenIndex() != -1 ? SharedData.getGreenIndex() : SharedData.getPurpleIndex(), false);
+                telemetry.addData("at" , "timeslaunched == index");
             }
             //Control post-launch sequence
             if(launched) {
+                telemetry.addData("at" , "if launched");
                 if (launchTimer.getElapsedTimeSeconds() > 1) {
                     SharedData.clearSlot(blueJai.slotGoal);
                     launchTimer.resetTimer();
@@ -88,14 +110,18 @@ public class TalonsAuto extends OpMode {
                 launched = true;
                 launchTimer.resetTimer();
             }
-
         }
-        else{
-            if(detectColorTimer.getElapsedTimeSeconds() > .4 && blueJai.detectBall()){
+        else {
+            if (detectColorTimer.getElapsedTimeSeconds() > .4 && blueJai.detectBall()) {
+                telemetry.addData("at", "detect ball and color");
+                telemetry.update();
                 SharedData.storage[blueJai.slotGoal] = blueJai.detectColor();
+                detectColorTimer.resetTimer();
             }
-            blueJai.setStoragePos(SharedData.storage[0] == ColorSensed.NO_COLOR ? 0 : (SharedData.storage[1] == ColorSensed.NO_COLOR ? 1 : 2),!SharedData.isFull());
+            blueJai.setStoragePos(SharedData.storage[0] == ColorSensed.NO_COLOR ? 0 : (SharedData.storage[1] == ColorSensed.NO_COLOR ? 1 : 2), !SharedData.isFull());
+            telemetry.addData("at", "setting storage pos at the end of loop");
         }
+        telemetry.update();
 
     }
 
@@ -111,7 +137,7 @@ public class TalonsAuto extends OpMode {
             return -1;
         }
     }
-    void buildPaths(){
+    public void buildPaths(){
         toShootOne = f.pathBuilder()
                 .addPath(new BezierLine(poses.startPos, poses.shootPos))
                 .setLinearHeadingInterpolation(poses.startPos.getHeading(), poses.shootPos.getHeading())
@@ -147,7 +173,8 @@ public class TalonsAuto extends OpMode {
                 .setLinearHeadingInterpolation(poses.shootPos.getHeading(), poses.leave.getHeading())
                 .build();
     }
-    void autoPathUpdates(){
+
+    public void autoPathUpdates(){
         sendPose();
         switch (pathState){
             case 0:
@@ -162,7 +189,7 @@ public class TalonsAuto extends OpMode {
                     blueJai.stopRollers();
                 }
                 else if(!f.isBusy() && pathTimer.getElapsedTimeSeconds() > 3){
-                    if(launching == false) //idk if this part is needed or not (idea is to reset the launch timer doing into the launching sequence)
+                    if(!launching) //idk if this part is needed or not (idea is to reset the launch timer doing into the launching sequence)
                         launchTimer.resetTimer();
                     launching = true;
                     blueJai.startRollers();
@@ -191,7 +218,7 @@ public class TalonsAuto extends OpMode {
                     blueJai.stopRollers();
                 }
                 else if(!f.isBusy() && pathTimer.getElapsedTimeSeconds() < 3){
-                    if(launching == false)
+                    if(!launching)
                         launchTimer.resetTimer();
                     launching = true;
                     blueJai.stopIntake();
@@ -220,7 +247,7 @@ public class TalonsAuto extends OpMode {
                     blueJai.startRollers();
                 }
                 else if(!f.isBusy() && pathTimer.getElapsedTimeSeconds() > 3){
-                    if(launching == false)
+                    if(!launching)
                         launchTimer.resetTimer();
                     launching = true;
                     blueJai.stopIntake();
@@ -236,6 +263,11 @@ public class TalonsAuto extends OpMode {
 
         }
     }
+
+    public void stop(){
+
+    }
+
     public void sendPose(){SharedData.toTeleopPose = f.getPose();}
     public void setPathState(int state){
         pathState = state;

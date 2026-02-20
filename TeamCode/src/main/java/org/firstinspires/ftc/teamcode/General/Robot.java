@@ -21,6 +21,7 @@ public class Robot {
     DistanceSensor distance;
 
     int targetVelocity;
+    int targetRPM;
 
     public int slotGoal;
     Limelight3A limelight;
@@ -106,11 +107,17 @@ public class Robot {
     }
 
     public void setLaunchVelocity(int rpm){
+        this.targetRPM = rpm;
         targetVelocity = (rpm*28) / 60;
         shooter.setVelocity(targetVelocity);
-
-
     }
+    public double getLaunchVelocity(){
+        return shooter.getVelocity();
+    }
+    public double getLaunchRPM(){
+        return ((60*shooter.getVelocity()) /28);
+    }
+
     public boolean shooterAtSpeed() {
         return Math.abs(shooter.getVelocity() - targetVelocity) < 35;
     }
