@@ -79,7 +79,7 @@ public class TeleOpTalons extends LinearOpMode {
         }
         public void updateLaunch(){
             if (launching && blueJai.shooterAtSpeed()) {
-                if (launchTimer.getElapsedTimeSeconds() > 0.35 /* && kicker is at not at launch pos check*/) {
+                if (launchTimer.getElapsedTimeSeconds() > 0.35 /* && kicker is at not at launch pos*/) {
                     //launch
                     blueJai.setLaunchVelocity(closeLaunch);
                 }
