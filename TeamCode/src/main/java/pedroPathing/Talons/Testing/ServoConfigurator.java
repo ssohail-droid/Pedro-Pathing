@@ -7,6 +7,10 @@ import com.qualcomm.robotcore.hardware.Servo;
 @TeleOp
 public class ServoConfigurator extends LinearOpMode {
 
+    public static int PWM_MIN = 800;
+    public static int PWM_MAX = 2200;
+
+
     private Servo sorter;
     double servoPos;
     boolean dpad;

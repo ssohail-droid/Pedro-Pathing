@@ -38,6 +38,7 @@ public class TalonsAuto extends OpMode {
         limelight = hardwareMap.get(Limelight3A.class , "limelight");
         limelight.start();
         SharedData.reset();
+        f = new Follower(hardwareMap);
 
         pathTimer = new Timer();
         opmodeTimer = new Timer();
@@ -73,7 +74,7 @@ public class TalonsAuto extends OpMode {
         autoPathUpdates();
         //.35 sort time, .5 kick + return time
         if(launching){
-            blueJai.setLaunchVelocity(2640);//set a velocity eventually, for now its an rpm
+            blueJai.setLaunchVelocity(2640);//set a velocity eventually, for now it's a rpm
             telemetry.addData("at" , "velocity setting");
             telemetry.addData("vel" , blueJai.getLaunchVelocity());
             telemetry.addData("at" , blueJai.getLaunchRPM());

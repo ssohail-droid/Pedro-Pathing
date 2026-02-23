@@ -8,12 +8,16 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.PIDFCoefficients;
+import com.qualcomm.robotcore.hardware.PwmControl;
 import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcore.external.JavaUtil;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 
 public class Robot {
+    public static int PWM_MIN = 800;
+    public static int PWM_MAX = 2200;
+
     DcMotorEx intake, shooter;
     CRServo crRight, crLeft;
     Servo spinServo, kickServo, adjustServo;
@@ -94,13 +98,13 @@ public class Robot {
 //        CA launch = .33;
 //        .55 CB launch;
         if (intake){
-            if(slot == 1){spinServo.setPosition(.225);}
-            else if (slot == 2){spinServo.setPosition(.44);}
-            else if (slot == 3){spinServo.setPosition(.66);}
+            if(slot == 1){spinServo.setPosition(.145);}
+            else if (slot == 2){spinServo.setPosition(.41);}
+            else if (slot == 3){spinServo.setPosition(.7);}
         }else{
-            if(slot == 1){spinServo.setPosition(.55);}
-            else if (slot == 2){spinServo.setPosition(.33);}
-            else if (slot == 3){spinServo.setPosition(.12);}
+            if(slot == 1){spinServo.setPosition(0);}
+            else if (slot == 2){spinServo.setPosition(.28);}
+            else if (slot == 3){spinServo.setPosition(.56);}
         }
     }
 
@@ -128,5 +132,15 @@ public class Robot {
     public boolean shooterAtSpeed() {
         return Math.abs(shooter.getVelocity() - targetVelocity) < 35;
     }
+
+    public void setServos(){
+        if (spinServo instanceof PwmControl) {
+            ((PwmControl) spinServo).setPwmRange(new PwmControl.PwmRange(PWM_MIN, PWM_MAX));
+        }
+        if (adjustServo instanceof PwmControl) {
+            ((PwmControl) adjustServo).setPwmRange(new PwmControl.PwmRange(PWM_MIN, PWM_MAX));
+        }
+    }
+
 
 }

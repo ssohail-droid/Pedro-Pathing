@@ -3,6 +3,7 @@ package pedroPathing.Talons.TeleOps;
 
 import com.pedropathing.follower.Follower;
 import com.pedropathing.localization.Pose;
+import com.pedropathing.util.Constants;
 import com.pedropathing.util.Timer;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
@@ -14,6 +15,9 @@ import pedroPathing.Talons.General.SharedData;
 import pedroPathing.Talons.General.PoseConstants;
 import pedroPathing.Talons.General.ColorSensed;
 import pedroPathing.Talons.General.Side;
+import pedroPathing.constants.FConstants;
+import pedroPathing.constants.LConstants;
+
 @TeleOp
 public class TeleOpTalons extends LinearOpMode {
 
@@ -35,21 +39,27 @@ public class TeleOpTalons extends LinearOpMode {
     public void runOpMode() throws InterruptedException{
         blueJai = new Robot(hardwareMap);
 
+        Constants.setConstants(FConstants.class, LConstants.class);
+        f = new Follower(hardwareMap);
         f.setStartingPose(new Pose(0,0,0));
         f.update();
+        f.startTeleopDrive();
+
+
+
 
         waitForStart();
 
-        f.startTeleopDrive();
         while (opModeIsActive()){
+
+
             f.setTeleOpMovementVectors(
                     -gamepad1.left_stick_y * speedMultiplier,
                     -gamepad1.left_stick_x * speedMultiplier,
                     -gamepad1.right_stick_x * speedMultiplier,
                     robotCentric
             );
-
-
+            f.update();
 
 
             if (gamepad1.left_trigger >= .2){
@@ -66,14 +76,18 @@ public class TeleOpTalons extends LinearOpMode {
 
             if (gamepad1.dpad_up && SharedData.getGreenIndex() != -1){
                 blueJai.setStoragePos(SharedData.getGreenIndex() , false);
+                sleep(3000);
                 blueJai.setKickServo(true);
                 blueJai.setLaunchVelocity(activeRPM);
             }
             else if (gamepad1.dpad_down && SharedData.getPurpleIndex() != -1){
                 blueJai.setStoragePos(SharedData.getPurpleIndex() , false);
+
                 blueJai.setKickServo(true);
                 blueJai.setLaunchVelocity(activeRPM);
             }
+
+            updateLaunch();
 
 
 
@@ -84,11 +98,13 @@ public class TeleOpTalons extends LinearOpMode {
     public void updateLaunch(){
         if (launching && blueJai.shooterAtSpeed()) {
             if (launchTimer.getElapsedTimeSeconds() > 0.35 /* && kicker is at not at launch pos*/) {
+                blueJai.setKickServo(true);
                 //launch
+
                 blueJai.setLaunchVelocity(closeLaunch);
             }
             if (launchTimer.getElapsedTimeSeconds() > 0.75) {
-                //reset kicker
+                blueJai.setKickServo(false);
             }
             if (launchTimer.getElapsedTimeSeconds() > 1.25) {
                 ballsLaunched++; // count to make sure it knows how many its shot
