@@ -86,14 +86,21 @@ public class Robot {
 
     public void setStoragePos(int slot, boolean intake){
         slotGoal = slot;
+//        .225 BC intake;
+//        .44 AB intake;
+//        .66 CA intake;
+//
+//        BA launch = .12;
+//        CA launch = .33;
+//        .55 CB launch;
         if (intake){
-            if(slot == 1){spinServo.setPosition(.145);}
-            else if (slot == 2){spinServo.setPosition(.41);}
-            else if (slot == 3){spinServo.setPosition(.7);}
+            if(slot == 1){spinServo.setPosition(.225);}
+            else if (slot == 2){spinServo.setPosition(.44);}
+            else if (slot == 3){spinServo.setPosition(.66);}
         }else{
-            if(slot == 1){spinServo.setPosition(.56);}
-            else if (slot == 2){spinServo.setPosition(.28);}
-            else if (slot == 3){spinServo.setPosition(0);}
+            if(slot == 1){spinServo.setPosition(.55);}
+            else if (slot == 2){spinServo.setPosition(.33);}
+            else if (slot == 3){spinServo.setPosition(.12);}
         }
     }
 
