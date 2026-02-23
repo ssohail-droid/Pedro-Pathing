@@ -1,0 +1,125 @@
+package pedroPathing.Talons.General;
+
+import com.qualcomm.hardware.limelightvision.Limelight3A;
+import com.qualcomm.robotcore.hardware.CRServo;
+import com.qualcomm.robotcore.hardware.ColorSensor;
+import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.hardware.DistanceSensor;
+import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.qualcomm.robotcore.hardware.PIDFCoefficients;
+import com.qualcomm.robotcore.hardware.Servo;
+
+import org.firstinspires.ftc.robotcore.external.JavaUtil;
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
+
+public class Robot {
+    DcMotorEx intake, shooter;
+    CRServo crRight, crLeft;
+    Servo spinServo, kickServo, adjustServo;
+    ColorSensor color;
+    DistanceSensor distance;
+
+    int targetVelocity;
+    int targetRPM;
+
+    public int slotGoal;
+    Limelight3A limelight;
+
+    public Robot(HardwareMap hardwareMap){
+        intake = hardwareMap.get(DcMotorEx.class, "intake");
+
+        shooter = hardwareMap.get(DcMotorEx.class, "shooter");
+        shooter.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
+        shooter.setDirection(DcMotorSimple.Direction.REVERSE);
+        shooter.setPIDFCoefficients(
+                DcMotorEx.RunMode.RUN_USING_ENCODER,
+                new PIDFCoefficients(70, 0, 8, 13.5)
+        );
+        crLeft = hardwareMap.get(CRServo.class, "cr_left");
+        crRight = hardwareMap.get(CRServo.class, "cr_right");
+        crRight.setDirection(DcMotorSimple.Direction.REVERSE);
+
+        spinServo = hardwareMap.get(Servo.class, "spin");
+        kickServo = hardwareMap.get(Servo.class, "kick_servo");
+        adjustServo = hardwareMap.get(Servo.class, "adjust_servo");
+
+        limelight = hardwareMap.get(Limelight3A.class, "limelight");
+
+        distance = hardwareMap.get(DistanceSensor.class, "sensor_color_left");
+        color = hardwareMap.get(ColorSensor.class, "sensor_color_right");
+    }
+
+    public void startIntake(boolean in){
+        crRight.setPower(1);
+        crLeft.setPower(1);
+        intake.setPower(in ? .9 : -.9);
+    }
+
+    public void stopIntake(){
+        crRight.setPower(0);
+        crLeft.setPower(0);
+        intake.setPower(0);
+    }
+    public void startRollers(){
+        crRight.setPower(1);
+        crLeft.setPower(1);
+    }
+    public void stopRollers(){
+        crRight.setPower(0);
+        crLeft.setPower(0);
+    }
+    public boolean detectBall(){
+        return distance.getDistance(DistanceUnit.CM) < 3;
+    }
+
+    public ColorSensed detectColor(){
+
+
+        double saturationR = JavaUtil.rgbToSaturation(color.red(), color.green(), color.blue());
+        double hueR = JavaUtil.rgbToHue(color.red(), color.green(), color.blue());
+
+        ColorSensed  sensedColor =  (hueR > 160 && saturationR < .3) ? ColorSensed.PURPLE : ((hueR < 150 && saturationR > .65) ? ColorSensed.GREEN : ColorSensed.INCONCLUSIVE);
+
+        return sensedColor;
+    }
+
+    public void setStoragePos(int slot, boolean intake){
+        slotGoal = slot;
+        if (intake){
+            if(slot == 1){spinServo.setPosition(.145);}
+            else if (slot == 2){spinServo.setPosition(.41);}
+            else if (slot == 3){spinServo.setPosition(.7);}
+        }else{
+            if(slot == 1){spinServo.setPosition(.56);}
+            else if (slot == 2){spinServo.setPosition(.28);}
+            else if (slot == 3){spinServo.setPosition(0);}
+        }
+    }
+
+    public void setKickServo(boolean kick){
+        if(kick){kickServo.setPosition(.7);}
+        else{kickServo.setPosition(1);}
+    }
+
+    public void setAdjustServo(double pos){
+        adjustServo.setPosition(pos);
+    }
+
+    public void setLaunchVelocity(int rpm){
+        this.targetRPM = rpm;
+        targetVelocity = (rpm*28) / 60;
+        shooter.setVelocity(targetVelocity);
+    }
+    public double getLaunchVelocity(){
+        return shooter.getVelocity();
+    }
+    public double getLaunchRPM(){
+        return ((60*shooter.getVelocity()) /28);
+    }
+
+    public boolean shooterAtSpeed() {
+        return Math.abs(shooter.getVelocity() - targetVelocity) < 35;
+    }
+
+}
