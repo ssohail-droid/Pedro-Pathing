@@ -2,6 +2,7 @@ package pedroPathing.Talons.Testing;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.PwmControl;
 import com.qualcomm.robotcore.hardware.Servo;
 
 @TeleOp
@@ -19,6 +20,10 @@ public class ServoConfigurator extends LinearOpMode {
         sorter = hardwareMap.get(Servo.class , "spin");
 
         waitForStart();
+
+        if (sorter instanceof PwmControl) {
+            ((PwmControl) sorter).setPwmRange(new PwmControl.PwmRange(PWM_MIN, PWM_MAX));
+        }
 
 
 
