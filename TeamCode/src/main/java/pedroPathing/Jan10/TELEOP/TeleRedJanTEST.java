@@ -262,6 +262,7 @@ public class TeleRedJanTEST extends OpMode {
             follower.update();
         }
 
+        /*
         boolean aPressed = gamepad2.dpad_down && !lastA;
         boolean xShootPressed = gamepad2.dpad_up && !lastXShoot;
         lastA = gamepad2.dpad_down;
@@ -274,6 +275,38 @@ public class TeleRedJanTEST extends OpMode {
             shootState = ShootState.A;
             shootTimer.reset();
         }
+
+         */
+
+        boolean aPressed = gamepad2.dpad_down && !lastA;
+        boolean xShootPressed = gamepad2.dpad_up && !lastXShoot;
+        lastA = gamepad2.dpad_down;
+        lastXShoot = gamepad2.dpad_up;
+
+        if (aPressed) mode = Mode.INTAKE;
+
+// Stop intake
+        if (gamepad2.dpad_left && mode == Mode.INTAKE) {
+            mode = Mode.IDLE;
+        }
+
+// Reverse intake (hold to reverse)
+        if (gamepad2.dpad_right) {
+            intake.setPower(-INTAKE_POWER);
+            setCR(-CR_INTAKE_POWER, -CR_INTAKE_POWER);
+            mode = Mode.IDLE;
+        } else if (mode == Mode.IDLE) {
+            intake.setPower(0);
+        }
+
+        if (xShootPressed && ballCount > 0) {
+            mode = Mode.SHOOT;
+            shootState = ShootState.A;
+            shootTimer.reset();
+        }
+
+
+
 
         adjustServo.setPosition(
                 Math.max(HOOD_MIN, Math.min(HOOD_MAX, activeHood))

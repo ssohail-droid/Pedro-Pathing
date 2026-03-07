@@ -26,13 +26,13 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import pedroPathing.constants.FConstants;
 import pedroPathing.constants.LConstants;
 
-@TeleOp(name = "TELE RED Leave", group = "BackUp")
+@TeleOp(name = "TELE RED FRONT(OLD)", group = "Main")
 @Config
 public class TeleRedJan extends OpMode {
 
     /* ================= DRIVE ================= */
     private Follower follower;
-    private final Pose startPose = new Pose(95, 9, Math.toRadians(90));
+    private final Pose startPose = new Pose(95.99999999999999, 126.53915776241358, Math.toRadians(0));
 
     public static Pose TARGET_A = new Pose(107.3, 106, Math.toRadians(42));
     public static Pose TARGET_B = new Pose(105.331136738056, 108.4, Math.toRadians(42));

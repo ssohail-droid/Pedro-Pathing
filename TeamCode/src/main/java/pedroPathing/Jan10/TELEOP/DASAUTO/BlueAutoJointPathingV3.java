@@ -85,6 +85,9 @@ public class BlueAutoJointPathingV3 extends OpMode {
 
     private DcMotorEx intake, shooter;
     private CRServo crLeft, crRight;
+
+    public static double CR_L = 1.0;
+    public static double CR_R = -1.0;
     private Servo spinServo, kickServo, adjustServo;
     private DistanceSensor distanceSensor;
 
@@ -451,7 +454,7 @@ public class BlueAutoJointPathingV3 extends OpMode {
         shootTimer.reset();
         setShooterRPM(RPM);
     }
-
+/*
     private void runShoot() {
 
         switch (shootState) {
@@ -545,6 +548,103 @@ public class BlueAutoJointPathingV3 extends OpMode {
         }
     }
 
+ */
+
+    private void runShoot() {
+
+        switch (shootState) {
+
+            case A:
+                spinServo.setPosition(SHOOT_A);
+                setCR(CR_L, CR_R);  // ← START CRs
+                shootTimer.reset();
+                shootState = ShootState.A_SETTLE;
+                break;
+
+            case A_SETTLE:
+                if (shootTimer.seconds() >= SETTLE_SEC && shooterAtSpeed()) {
+                    kickServo.setPosition(KICK_ACTIVE);
+                    shootTimer.reset();
+                    shootState = ShootState.A_KICK;
+                }
+                break;
+
+            case A_KICK:
+                if (shootTimer.milliseconds() >= KICK_MS) {
+                    kickServo.setPosition(KICK_IDLE);
+                    shootTimer.reset();
+                    shootState = ShootState.A_POST;
+                }
+                break;
+
+            case A_POST:
+                if (shootTimer.milliseconds() >= POST_MS)
+                    shootState = ShootState.B;
+                break;
+
+            case B:
+                spinServo.setPosition(SHOOT_B);
+                setCR(CR_L, CR_R);  // ← KEEP CRs ON
+                shootTimer.reset();
+                shootState = ShootState.B_SETTLE;
+                break;
+
+            case B_SETTLE:
+                if (shootTimer.seconds() >= SETTLE_SEC && shooterAtSpeed()) {
+                    kickServo.setPosition(KICK_ACTIVE);
+                    shootTimer.reset();
+                    shootState = ShootState.B_KICK;
+                }
+                break;
+
+            case B_KICK:
+                if (shootTimer.milliseconds() >= KICK_MS) {
+                    kickServo.setPosition(KICK_IDLE);
+                    shootTimer.reset();
+                    shootState = ShootState.B_POST;
+                }
+                break;
+
+            case B_POST:
+                if (shootTimer.milliseconds() >= POST_MS)
+                    shootState = ShootState.C;
+                break;
+
+            case C:
+                spinServo.setPosition(SHOOT_C);
+                setCR(CR_L, CR_R);  // ← KEEP CRs ON
+                shootTimer.reset();
+                shootState = ShootState.C_SETTLE;
+                break;
+
+            case C_SETTLE:
+                if (shootTimer.seconds() >= SETTLE_SEC && shooterAtSpeed()) {
+                    kickServo.setPosition(KICK_ACTIVE);
+                    shootTimer.reset();
+                    shootState = ShootState.C_KICK;
+                }
+                break;
+
+            case C_KICK:
+                if (shootTimer.milliseconds() >= KICK_MS) {
+                    kickServo.setPosition(KICK_IDLE);
+                    shootTimer.reset();
+                    shootState = ShootState.C_POST;
+                }
+                break;
+
+            case C_POST:
+                if (shootTimer.milliseconds() >= POST_MS) {
+                    setCR(0, 0);  // ← STOP CRs
+                    setShooterRPM(0);
+                    mode = Mode.IDLE;
+                    ballCount = 0;
+                    spinServo.setPosition(INTAKE_0);
+                }
+                break;
+        }
+    }
+
     /* ================= HELPERS ================= */
 
     private void setShooterRPM(double rpm) {
@@ -557,5 +657,10 @@ public class BlueAutoJointPathingV3 extends OpMode {
 
     private boolean shooterAtSpeed() {
         return Math.abs(getShooterRPM() - RPM) < RPM_TOL;
+    }
+
+    private void setCR(double l, double r) {
+        crLeft.setPower(l);
+        crRight.setPower(r);
     }
 }
