@@ -30,11 +30,11 @@ import pedroPathing.constants.LConstants;
  * @version 1.0, 3/12/2024
  */
 @Config
-//@Autonomous (name = "Straight Back And Forth", group = "PIDF Tuning")
+@Autonomous (name = "Straight Back And Forth", group = "PIDF Tuning")
 public class StraightBackAndForth extends OpMode {
     private Telemetry telemetryA;
 
-    public static double DISTANCE = 40;
+    public static double DISTANCE = 30;
 
     private boolean forward = true;
 
