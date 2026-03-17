@@ -14,22 +14,23 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 import com.qualcomm.robotcore.hardware.Servo;
 
 import pedroPathing.constants.FConstants;
 import pedroPathing.constants.LConstants;
 
-@TeleOp(name = "MAIN TELEOP", group = "Main")
+@TeleOp(name = "RED TELE", group = "Main")
 @Config
-public class MainTeleOp extends OpMode {
+public class stateRedTELE extends OpMode {
 
     // ──────────────── PEDRO PATHING ────────────────
     private Follower follower;
     private final Pose startPose = new Pose(110.5634266886326, 134.20757825370674, Math.toRadians(0));
 
-    public static Pose TARGET_A = new Pose(90, 90, Math.toRadians(42));
-    public static Pose TARGET_B = new Pose(90, 90, Math.toRadians(42));
+    public static Pose TARGET_A = new Pose(98.04968944099379, 98.04968944099379, Math.toRadians(42));
+    public static Pose TARGET_B = new Pose(87.09316770186336, 121.75155279503106, Math.toRadians(16));
     public static Pose TARGET_C = new Pose(90, 90, Math.toRadians(42));
 
     public static double POS_TOL          = 2.0;
@@ -195,6 +196,8 @@ public class MainTeleOp extends OpMode {
                 shooterToggle = 1;
                 hoodServo.setPosition(HOOD_POS_A);
             }
+
+
         }
         lastShooterBtnA = shooterBtnA;
 
@@ -211,12 +214,28 @@ public class MainTeleOp extends OpMode {
         lastShooterBtnB = shooterBtnB;
 
         /* --- Shooter velocity --- */
+//        if (shooterToggle == 1) {
+//            shooter.setVelocity((SHOOT_RPM_A * TICKS_PER_REV) / 60.0);
+//        } else if (shooterToggle == 2) {
+//            shooter.setVelocity((SHOOT_RPM_B * TICKS_PER_REV) / 60.0);
+//        } else {
+//            shooter.setVelocity(0);
+//        }
+
+        /* --- Shooter velocity --- */
         if (shooterToggle == 1) {
             shooter.setVelocity((SHOOT_RPM_A * TICKS_PER_REV) / 60.0);
         } else if (shooterToggle == 2) {
             shooter.setVelocity((SHOOT_RPM_B * TICKS_PER_REV) / 60.0);
         } else {
             shooter.setVelocity(0);
+        }
+
+        /* --- Rumble while shooter is running --- */
+        if (shooterToggle != 0) {
+            gamepad2.rumble(0.5, 0.5, Gamepad.RUMBLE_DURATION_CONTINUOUS);
+        } else {
+            gamepad2.stopRumble();
         }
 
         /* --- Preset: midPipe + intake (left bumper) --- */
