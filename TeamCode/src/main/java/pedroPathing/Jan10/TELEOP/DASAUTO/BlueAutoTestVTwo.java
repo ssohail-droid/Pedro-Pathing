@@ -21,7 +21,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import pedroPathing.constants.FConstants;
 import pedroPathing.constants.LConstants;
 
-@Autonomous(name = "Blue Auto", group = "Main")
+//@Autonomous(name = "Blue Auto", group = "Main")
 public class BlueAutoTestVTwo extends OpMode {
 
     /* ================= DRIVE ================= */

@@ -27,7 +27,7 @@ import pedroPathing.constants.LConstants;
 
 // Final
 //Lock This Code NO CHANGE EVER
-@Autonomous(name = "Blue Auto Joint", group = "Joint")
+//@Autonomous(name = "Blue Auto Joint", group = "Joint")
 public class BlueAutoJointPathingV3 extends OpMode {
 
     private Follower follower;

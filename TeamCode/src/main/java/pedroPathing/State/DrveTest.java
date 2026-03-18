@@ -16,7 +16,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import pedroPathing.constants.FConstants;
 import pedroPathing.constants.LConstants;
 
-@TeleOp(name = "TELE RED FRONT(OLD)TETE", group = "Main")
+//@TeleOp(name = "TELE RED FRONT(OLD)TETE", group = "Main")
 @Config
 public class DrveTest extends OpMode {
 

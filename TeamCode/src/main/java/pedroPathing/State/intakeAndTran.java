@@ -9,7 +9,7 @@ import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 import com.qualcomm.robotcore.hardware.Servo;
 
 @Config
-@TeleOp(name="intakeAndTranTEST")
+//@TeleOp(name="intakeAndTranTEST")
 
 public class intakeAndTran extends OpMode {
 

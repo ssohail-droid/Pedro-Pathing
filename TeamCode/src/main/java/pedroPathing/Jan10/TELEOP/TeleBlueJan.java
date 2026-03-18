@@ -26,7 +26,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import pedroPathing.constants.FConstants;
 import pedroPathing.constants.LConstants;
 
-@TeleOp(name = "TELE BLUE FRONT(OLD))", group = "Main")
+//@TeleOp(name = "TELE BLUE FRONT(OLD))", group = "Main")
 @Config
 public class TeleBlueJan extends OpMode {
 

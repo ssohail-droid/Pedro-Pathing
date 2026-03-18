@@ -27,7 +27,7 @@ public class stateBlueTELE extends OpMode {
 
     // ──────────────── PEDRO PATHING ────────────────
     private Follower follower;
-    private final Pose startPose = new Pose(34.546583850931675, 135.39130434782612, Math.toRadians(180));
+    private final Pose startPose = new Pose(49.357495881383855, 123.7693574958814, Math.toRadians(180));
 
     public static Pose TARGET_A = new Pose(44.94409937888198, 99.05590062111803, Math.toRadians(134));
     public static Pose TARGET_B = new Pose(57.91304347826086, 124.09937888198759, Math.toRadians(167));

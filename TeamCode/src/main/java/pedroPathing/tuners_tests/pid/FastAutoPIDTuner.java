@@ -37,7 +37,7 @@ import java.util.List;
  * @version 3.0 - Speed Optimized
  */
 @Config
-@Autonomous(name = "Fast Auto PID Tuner", group = "PIDF Tuning")
+//@Autonomous(name = "Fast Auto PID Tuner", group = "PIDF Tuning")
 public class FastAutoPIDTuner extends OpMode {
 
     // Reduced tuning parameters for speed
